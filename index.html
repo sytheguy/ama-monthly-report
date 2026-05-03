@@ -1,0 +1,2320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMA Report System — Data Entry</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+// ================================================================
+// AMA REPORT SYSTEM — data.js v3
+// Full 12-month schema + callout editor fields
+// ================================================================
+
+const AMA_DATA_KEY = 'ama_report_current';
+const AMA_HIST_KEY = 'ama_report_historical';
+
+const MONTHS = [
+  'january','february','march','april','may','june',
+  'july','august','september','october','november','december'
+];
+const MONTH_LABELS = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December'
+];
+
+function monthIndex(name) { return MONTHS.indexOf((name||'').toLowerCase()); }
+function monthsUpTo(month) { const i=monthIndex(month); return i<0?MONTHS.slice(0,3):MONTHS.slice(0,i+1); }
+function blankYear() { const o={}; MONTHS.forEach(m=>o[m]=null); return o; }
+function defaultTrend(jan,feb,mar) {
+  return {january:jan,february:feb,march:mar,april:null,may:null,june:null,
+    july:null,august:null,september:null,october:null,november:null,december:null};
+}
+
+// ---- Callout block helper ----
+function callout(value, subtitle, commentary) { return {value,subtitle,commentary}; }
+
+// ----------------------------------------------------------------
+// DEFAULT DATA
+// ----------------------------------------------------------------
+const DEFAULT_DATA = {
+  meta: { month:'March', year:'2026', period:'1st January 2026 – 31st March 2026' },
+
+  overview: {
+    total_collections:9038111, total_transactions:4080,
+    platform:{inspector_portal:2248,customer_portal:930,customer_ussd:785,inspector_ussd:117},
+    monthly_trend:defaultTrend(3218940.62,2686993.19,3116817.06),
+    mom_change:15.99, mom_direction:'up'
+  },
+
+  property_rate: {
+    collections:4172219, transactions:1398,
+    paid_count:1003, paid_value:3553855,
+    partial_count:473, partial_value:3277138.80,
+    unpaid_count:25589, unpaid_value:102872921.46,
+    platform:{inspector_portal:930,customer_portal:250,customer_ussd:207,inspector_ussd:11},
+    monthly_trend:defaultTrend(1010301.27,968488.54,2187756.76),
+    mom_change:125.93, mom_direction:'up',
+    new_properties:defaultTrend(14,21,22),
+    past_payments:defaultTrend(7002,1977802,664907.77),
+    yoy_2025:defaultTrend(382853.18,704323.38,1303185.86),
+    commentary:'Property rate collections recorded a notable increase this month, driven by a few high-value payments received toward the end of the month.'
+  },
+
+  bop: {
+    collections:4729055, transactions:2630,
+    paid_count:2335, paid_value:4627955,
+    partial_count:254, partial_value:170016,
+    unpaid_count:8043, unpaid_value:10690196,
+    platform:{inspector_portal:1302,customer_portal:656,customer_ussd:566,inspector_ussd:106},
+    monthly_trend:defaultTrend(2209279.35,1691499.65,819228.30),
+    mom_change:51.56, mom_direction:'down',
+    new_businesses:defaultTrend(126,126,28),
+    past_payments:defaultTrend(8618,15971,900),
+    business_types:[
+      {name:'Commercial Houses / Departmental Stores',expected:2662549,collected:358472},
+      {name:'Un-bonded Warehouse',expected:2635607.25,collected:1182533.9},
+      {name:'Universal Banks',expected:1347236,collected:1204841},
+      {name:'Manufacturing / Processing Companies',expected:1177203,collected:546928},
+      {name:'Hardware (Distributor / Wholesaler)',expected:727824,collected:97950},
+      {name:'Electronic / Home Appliances / Shops',expected:473886,collected:47172},
+      {name:'Electrical Appliances',expected:471837,collected:38540},
+      {name:'Fabric Dealers – Sales',expected:416898,collected:42290},
+      {name:"Used Clothing Sales ('Second Hand')",expected:384095,collected:35115},
+      {name:'Cosmetic / Personal Care / Hair Products',expected:330311.9,collected:41044}
+    ],
+    compliance_banks:89.44, compliance_commercial:13.46, compliance_warehouse:44.87,
+    yoy_2025:defaultTrend(681619,1866377,650357.20),
+    yoy_2024:defaultTrend(23780,49340,137050),
+    commentary:'The staff strike in March had a clear negative impact on this revenue line, leading to a second consecutive month of declining collections.'
+  },
+
+  signage: {
+    collections:136837, transactions:51,
+    paid_count:43, paid_value:87239,
+    partial_count:7, partial_value:49762,
+    unpaid_count:2325, unpaid_value:4965927,
+    platform:{customer_portal:23,collectors_portal:16,customer_ussd:12},
+    monthly_trend:defaultTrend(0,27005,109832),
+    mom_change:306.71, mom_direction:'up',
+    self_service_pct:69, customer_led_pct:68.63,
+    yoy_2025:defaultTrend(3337,119897,32280),
+    yoy_change_march:240.27, yoy_direction:'down',
+    commentary:'Collection activity has picked up strongly on this revenue line, with March recording a substantial increase in collections. Self-service payments continue to dominate, accounting for 69% of total transactions.'
+  },
+
+  inspector: {
+    total_collections:6354740, total_transactions:2365,
+    property_rate:2987501, property_rate_transactions:941,
+    bop:3274305, bop_transactions:1408,
+    signage:92934, signage_transactions:16,
+    platform:{inspector_portal:2248,inspector_ussd:117},
+    monthly_trend:defaultTrend(1667400.80,2188186.99,2490795.95),
+    commentary:'Inspector Portal dominates field collections, accounting for 95% of all inspector-led transactions across all revenue lines.'
+  },
+
+  overall: {
+    yoy_2024:defaultTrend(23780,49340,137050),
+    yoy_2025:defaultTrend(1067809.08,2690596.98,1985823.06),
+    yoy_2026:defaultTrend(3218940.62,2685209.19,3116817.06),
+    mom_change:15.99, mom_direction:'up'
+  },
+
+  financial: {
+    transfers:[
+      {date:'12/03/2026',amount:2256962.15},
+      {date:'10/02/2026',amount:1588246.65},
+      {date:'19/01/2026',amount:1947542.90}
+    ],
+    ama_share_pct:70, total_collections:9038111,
+    total_transfers:5792751.70, balance:533926,
+    latest_sweep_date:'12/03/2026', latest_sweep_amount:2256962.15
+  },
+
+  // ── CALLOUT EDITOR BLOCKS ──
+  callouts: {
+    // Page 3 — Overall Revenue Comparison (2 cards)
+    overall_yoy: [
+      callout('+56.96%','March 2026 vs March 2025','Collections saw a bounce back in March heavily due to collections received for some property rate payments later in the month.'),
+      callout('+15.99%','February 2026 vs March 2026','A strike action during the month caused a slowdown in field operations which affected collections for Business Operating Permit. This growth is carried entirely by Property Rate collections done in the period.')
+    ],
+    // Page 5 — PR New Properties (1 card)
+    pr_new_properties: callout('22 ▲','New properties added in March','Identified and added through enforcement activities and field visits by the operations team. Revenue base expanded by GHS 245,435.53, of which GHS 12,397.46 has already been collected.'),
+    // Page 5 — PR Past Payments (1 card)
+    pr_past_payments: callout('GHS 664,907.77','Past payments applied in March','Applied on 42 different properties. Payments made by property owners outside the system confirmed by the assembly with proof of receipts, applied to outstanding bills.'),
+    // Page 6 — PR YoY (2 cards)
+    pr_yoy: [
+      callout('+74.29%','January – March 2026 vs January – March 2025','After three months of collections over the same period, Property Rate collections shows a steady improvement of compliance levels for the revenue line.'),
+      callout('+67.87%','March 2026 vs March 2025','This marks a strong start for Property Rate, with compliance levels steadily improving over the period. The increase in collections shows ratepayers adherence to payment requirements.')
+    ],
+    // Page 7 — PR Historical (2 cards)
+    pr_historical: [
+      callout('65.65%','Achieved in three months: 2024 vs 2026','Reaching this level within just three months highlights a clear shift in performance. It suggests that baseline collections have improved significantly.'),
+      callout('25.34%','2026 YTD of 2025 total','In just three months, that\'s a solid pace for this revenue line. If collections stay consistent or follow the usual peak pattern later in the year, we are on track for a strong year.')
+    ],
+    // Page 9 — BOP New Businesses (1 card)
+    bop_new_businesses: callout('28 ▼','Businesses added in March','These additions increased the projected revenue by GHS 26,186.10, out of which GHS 10,117.05 has already been collected.'),
+    // Page 9 — BOP Past Payments (1 card)
+    bop_past_payments: callout('GHS 900','Past payments applied in March','This payment was added on 1 business. Payments made outside the system confirmed by the assembly with proof of receipts, applied to outstanding bills.'),
+    // Page 10 — BOP Business Type Compliance (3 cards)
+    bop_compliance: [
+      callout('89.44%','Universal Banks compliance rate','GHS 1.2M collected vs GHS 1.35M expected.'),
+      callout('13.46%','Commercial Houses compliance rate','This business type carries the highest expected revenue but has only seen a fraction of the revenue realized.'),
+      callout('44.87%','Un-bonded Warehouses progress','A strong targeted enforcement on this revenue line will help increase payment conversion and unlock outstanding high value revenue.')
+    ],
+    // Page 11 — BOP YoY (2 cards)
+    bop_yoy: [
+      callout('+224.04%','January 2026 vs January 2025','Marking a very strong start to the year, these payments were mostly driven by big ticket payments made from Universal Banks. This business type usually makes payments early in the year.'),
+      callout('+25.96%','March 2026 vs March 2025','Collections appear lower, but that\'s mainly because large payments from business types like universal banks were received earlier in the year. Also, the strike action has affected collections leading to the heavy decline.')
+    ],
+    // Page 12 — BOP Historical (2 cards)
+    bop_historical: [
+      callout('+31.14%','2026 YTD vs all of 2023','Just three months in, collections are higher than the total collected for 2023 and 2024.'),
+      callout('55.36%','of 2025 full year achieved','This is heavily influenced by collections made from the Universal Banks business type earlier on in the year.')
+    ],
+    // Page 14 — Signage YoY (2 cards)
+    cs_yoy: [
+      callout('240.27%','March 2026 vs March 2025','After a slow start to the year due to delayed bill generation, Commercial Signage saw a strong turnaround in March, driven by 29 new collections.'),
+      callout('68.63%','Transactions were Customer-led','High customer-led payments indicates a clear willingness to pay even without direct follow-up from inspectors.')
+    ],
+    // Page 16 — Overall Historical (2 cards)
+    overall_historical: [
+      callout('35.43%','2025 full year vs 2026 YTD','Benchmarking against our highest-record year, 2025, we\'ve already achieved a good percentage of that total within just the first three months.'),
+      callout('GHS 48M BY EOY','End of year projection','March collections bounced back strongly by 15.99%. If that momentum holds at 5% growth each month, collections will rise from GHS 3.12M in March to GHS 4.87M by December, ending the year at an estimated GHS 48M.')
+    ]
+  }
+};
+
+// ----------------------------------------------------------------
+// HISTORICAL
+// ----------------------------------------------------------------
+const DEFAULT_HISTORICAL = {
+  property_rate:{2021:3938043.80,2022:3337104.90,2023:1693490.20,2024:2519354.00,2025:16466845.00},
+  bop:          {2021:4046131.20,2022:5163907.00,2023:3606112.50,2024:3501568.00,2025:8542882.00},
+  overall:      {2021:7984175.00,2022:8501012.00,2023:5299603.00,2024:6020922.00,2025:25511774.00}
+};
+
+// ----------------------------------------------------------------
+// MIGRATE
+// ----------------------------------------------------------------
+function ensureFullYear(obj) {
+  if (!obj||typeof obj!=='object') return blankYear();
+  const out=blankYear();
+  MONTHS.forEach(m=>{if(obj[m]!==undefined)out[m]=obj[m];});
+  return out;
+}
+
+function ensureCallout(c) {
+  if (!c||typeof c!=='object') return {value:'',subtitle:'',commentary:''};
+  return {value:c.value||'',subtitle:c.subtitle||'',commentary:c.commentary||''};
+}
+
+function ensureCalloutArray(arr, len) {
+  if (!Array.isArray(arr)) arr=[];
+  while(arr.length<len) arr.push({value:'',subtitle:'',commentary:''});
+  return arr.map(ensureCallout);
+}
+
+function migrateData(d) {
+  if (!d) return JSON.parse(JSON.stringify(DEFAULT_DATA));
+  try {
+    if(d.overview)      d.overview.monthly_trend      =ensureFullYear(d.overview.monthly_trend);
+    if(d.property_rate){
+      d.property_rate.monthly_trend  =ensureFullYear(d.property_rate.monthly_trend);
+      d.property_rate.new_properties =ensureFullYear(d.property_rate.new_properties);
+      d.property_rate.past_payments  =ensureFullYear(d.property_rate.past_payments);
+      d.property_rate.yoy_2025       =ensureFullYear(d.property_rate.yoy_2025);
+    }
+    if(d.bop){
+      d.bop.monthly_trend  =ensureFullYear(d.bop.monthly_trend);
+      d.bop.new_businesses =ensureFullYear(d.bop.new_businesses);
+      d.bop.past_payments  =ensureFullYear(d.bop.past_payments);
+      d.bop.yoy_2025       =ensureFullYear(d.bop.yoy_2025);
+      d.bop.yoy_2024       =ensureFullYear(d.bop.yoy_2024);
+    }
+    if(d.signage){
+      d.signage.monthly_trend=ensureFullYear(d.signage.monthly_trend);
+      d.signage.yoy_2025     =ensureFullYear(d.signage.yoy_2025);
+    }
+    if(d.inspector) d.inspector.monthly_trend=ensureFullYear(d.inspector.monthly_trend);
+    if(d.overall){
+      d.overall.yoy_2024=ensureFullYear(d.overall.yoy_2024);
+      d.overall.yoy_2025=ensureFullYear(d.overall.yoy_2025);
+      d.overall.yoy_2026=ensureFullYear(d.overall.yoy_2026);
+    }
+    // Migrate callouts — ensure structure exists
+    if(!d.callouts) d.callouts=JSON.parse(JSON.stringify(DEFAULT_DATA.callouts));
+    else {
+      const def=DEFAULT_DATA.callouts;
+      d.callouts.overall_yoy      =ensureCalloutArray(d.callouts.overall_yoy,2);
+      d.callouts.pr_new_properties=ensureCallout(d.callouts.pr_new_properties);
+      d.callouts.pr_past_payments =ensureCallout(d.callouts.pr_past_payments);
+      d.callouts.pr_yoy           =ensureCalloutArray(d.callouts.pr_yoy,2);
+      d.callouts.pr_historical    =ensureCalloutArray(d.callouts.pr_historical,2);
+      d.callouts.bop_new_businesses=ensureCallout(d.callouts.bop_new_businesses);
+      d.callouts.bop_past_payments =ensureCallout(d.callouts.bop_past_payments);
+      d.callouts.bop_compliance    =ensureCalloutArray(d.callouts.bop_compliance,3);
+      d.callouts.bop_yoy          =ensureCalloutArray(d.callouts.bop_yoy,2);
+      d.callouts.bop_historical   =ensureCalloutArray(d.callouts.bop_historical,2);
+      d.callouts.cs_yoy           =ensureCalloutArray(d.callouts.cs_yoy,2);
+      d.callouts.overall_historical=ensureCalloutArray(d.callouts.overall_historical,2);
+    }
+    // Migrate inspector commentary
+    if(!d.inspector.commentary) d.inspector.commentary=DEFAULT_DATA.inspector.commentary;
+  } catch(e){console.error('migrate error',e);}
+  return d;
+}
+
+// ----------------------------------------------------------------
+// STORAGE
+// ----------------------------------------------------------------
+function saveCurrentData(data){localStorage.setItem(AMA_DATA_KEY,JSON.stringify(data));}
+function loadCurrentData(){
+  const s=localStorage.getItem(AMA_DATA_KEY);
+  if(s){try{return migrateData(JSON.parse(s));}catch(e){}}
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+function saveHistoricalData(data){localStorage.setItem(AMA_HIST_KEY,JSON.stringify(data));}
+function loadHistoricalData(){
+  const s=localStorage.getItem(AMA_HIST_KEY);
+  if(s){try{return JSON.parse(s);}catch(e){}}
+  return JSON.parse(JSON.stringify(DEFAULT_HISTORICAL));
+}
+
+function exportData(){
+  const bundle={current:loadCurrentData(),historical:loadHistoricalData(),exported_at:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const d=loadCurrentData();
+  a.download=`ama-report-${d.meta.month}-${d.meta.year}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(file,onSuccess){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const bundle=JSON.parse(e.target.result);
+      if(bundle.current)    saveCurrentData(migrateData(bundle.current));
+      if(bundle.historical) saveHistoricalData(bundle.historical);
+      onSuccess();
+    }catch(err){alert('Invalid file. Please import a valid AMA report JSON file.');}
+  };
+  reader.readAsText(file);
+}
+
+function fmt(n){
+  if(n===null||n===undefined||n==='')return '';
+  return Number(n).toLocaleString('en-GH',{minimumFractionDigits:0,maximumFractionDigits:2});
+}
+
+</script>
+<style>
+/* ================================================================
+   DESIGN SYSTEM — matches report exactly
+   ================================================================ */
+:root {
+  --g900: #0f2d1e; --g800: #1a3d2a; --g700: #1e4d35;
+  --g600: #256040; --g500: #2e7d4f; --g400: #3a9e63;
+  --g300: #5cb87a; --g200: #a8d9b8; --g100: #d4eedd; --g050: #eef7f1;
+  --gold: #c8a84b; --gold-mid: #d4b862; --gold-light: #e8d08a; --gold-pale: #faf4e1;
+  --red: #b83232; --red-light: #f7e8e8;
+  --white: #ffffff; --offwhite: #f8faf9;
+  --border: #e2ebe6; --border-mid: #c8d8ce;
+  --text-1: #0f2d1e; --text-2: #2d4a38; --text-3: #5a7a66; --text-4: #8aaa96;
+  --font: 'DM Sans', 'Calibri', system-ui, sans-serif;
+  --r1: 3px; --r2: 6px; --r3: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text-1);
+  background: var(--offwhite);
+  min-height: 100vh;
+}
+
+/* ================================================================
+   TOP BAR
+   ================================================================ */
+.topbar {
+  background: linear-gradient(105deg, var(--g800) 0%, var(--g700) 60%, var(--g600) 100%);
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+}
+
+.topbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+
+.topbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.3px;
+}
+
+.topbar-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 400;
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255,255,255,0.15);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+/* ================================================================
+   BUTTONS
+   ================================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--r2);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--g900);
+}
+.btn-primary:hover { background: var(--gold-mid); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(200,168,75,0.4); }
+
+.btn-green {
+  background: var(--g500);
+  color: white;
+}
+.btn-green:hover { background: var(--g400); transform: translateY(-1px); }
+
+.btn-ghost {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.18); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--g700);
+  border: 1.5px solid var(--border-mid);
+}
+.btn-outline:hover { border-color: var(--g500); color: var(--g500); }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* ================================================================
+   TABS
+   ================================================================ */
+.tabs-nav {
+  background: var(--white);
+  border-bottom: 2px solid var(--border);
+  padding: 0 32px;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  position: sticky;
+  top: 60px;
+  z-index: 90;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.tabs-nav::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  padding: 14px 20px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: none;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.tab-btn:hover { color: var(--g600); }
+
+.tab-btn.active {
+  color: var(--g700);
+  border-bottom-color: var(--g700);
+}
+
+.tab-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border-mid);
+  flex-shrink: 0;
+}
+.tab-btn.active .tab-dot { background: var(--g500); }
+
+/* ================================================================
+   MAIN CONTENT
+   ================================================================ */
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ================================================================
+   SECTION CARDS
+   ================================================================ */
+.section-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r3);
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.section-card-hd {
+  background: linear-gradient(90deg, var(--g050) 0%, var(--white) 100%);
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-card-hd-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g500);
+  flex-shrink: 0;
+}
+
+.section-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--g700);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-card-body {
+  padding: 20px;
+}
+
+/* ================================================================
+   FORM GRID
+   ================================================================ */
+.form-grid {
+  display: grid;
+  gap: 16px;
+}
+.fg-2 { grid-template-columns: 1fr 1fr; }
+.fg-3 { grid-template-columns: 1fr 1fr 1fr; }
+.fg-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.fg-span2 { grid-column: span 2; }
+.fg-span3 { grid-column: span 3; }
+.fg-span4 { grid-column: span 4; }
+
+/* ================================================================
+   FORM FIELDS
+   ================================================================ */
+.field { display: flex; flex-direction: column; gap: 5px; }
+
+.field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--text-4);
+  margin-top: 3px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text-1);
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r2);
+  padding: 9px 12px;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--g500);
+  box-shadow: 0 0 0 3px rgba(46,125,79,0.1);
+}
+
+input.invalid, textarea.invalid {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(184,50,50,0.1);
+}
+
+textarea { resize: vertical; min-height: 90px; line-height: 1.55; }
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7a66' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* ================================================================
+   DIRECTION TOGGLE (up/down)
+   ================================================================ */
+.dir-toggle {
+  display: flex;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+}
+.dir-toggle input[type="radio"] { display: none; }
+.dir-toggle label {
+  flex: 1;
+  text-align: center;
+  padding: 9px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text-3);
+  background: var(--white);
+}
+.dir-toggle input[value="up"]:checked + label   { background: var(--g050); color: var(--g600); }
+.dir-toggle input[value="down"]:checked + label { background: var(--red-light); color: var(--red); }
+
+/* ================================================================
+   SUB-SECTION DIVIDER
+   ================================================================ */
+.sub-hd {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-3);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+  margin-top: 8px;
+}
+
+/* ================================================================
+   BUSINESS TYPE TABLE
+   ================================================================ */
+.biz-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.biz-table th {
+  background: var(--g700);
+  color: rgba(255,255,255,0.9);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 9px 12px;
+  text-align: left;
+}
+.biz-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.biz-table tr:nth-child(even) td { background: var(--g050); }
+.biz-table td input {
+  font-size: 13px;
+  padding: 6px 10px;
+}
+.biz-table td:first-child { color: var(--text-2); font-weight: 500; font-size: 12.5px; }
+
+/* ================================================================
+   TRANSFERS TABLE
+   ================================================================ */
+.transfer-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 36px;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.transfer-row-hd {
+  display: grid;
+  grid-template-columns: 160px 1fr 36px;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.transfer-row-hd span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-3);
+}
+
+.btn-remove {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r1);
+  background: var(--red-light);
+  color: var(--red);
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.btn-remove:hover { background: var(--red); color: white; }
+
+/* ================================================================
+   TOAST NOTIFICATION
+   ================================================================ */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--g800);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--r2);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 999;
+  pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { font-size: 16px; }
+
+/* ================================================================
+   VALIDATION SUMMARY
+   ================================================================ */
+.validation-box {
+  background: var(--red-light);
+  border: 1.5px solid var(--red);
+  border-radius: var(--r2);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: none;
+}
+.validation-box.show { display: block; }
+.validation-box-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--red);
+  margin-bottom: 8px;
+}
+.validation-box ul {
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: var(--red);
+  line-height: 1.7;
+}
+
+/* ================================================================
+   PAGE HEADER (inside main)
+   ================================================================ */
+.page-hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+.page-hd-left h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--g800);
+  letter-spacing: -0.3px;
+}
+.page-hd-left p {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+.page-hd-actions { display: flex; gap: 10px; flex-shrink: 0; }
+
+/* ================================================================
+   HISTORICAL TABLE
+   ================================================================ */
+.hist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.hist-table th {
+  background: var(--g700);
+  color: rgba(255,255,255,0.9);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 10px 14px;
+  text-align: left;
+}
+.hist-table th:first-child { width: 160px; }
+.hist-table td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.hist-table tr:nth-child(even) td { background: var(--g050); }
+.hist-table td:first-child {
+  font-weight: 600;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+/* ================================================================
+   INFO CHIPS
+   ================================================================ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--g050);
+  color: var(--g600);
+}
+.chip-gold { background: var(--gold-pale); color: #7a5a10; }
+
+/* ================================================================
+   GENERATE BUTTON (fixed bottom right)
+   ================================================================ */
+.generate-fab {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: linear-gradient(135deg, var(--g700), var(--g500));
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 28px;
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(30,77,53,0.4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s;
+  z-index: 98;
+}
+.generate-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(30,77,53,0.5);
+}
+
+@media (max-width: 768px) {
+  .fg-4 { grid-template-columns: 1fr 1fr; }
+  .fg-3 { grid-template-columns: 1fr 1fr; }
+  .fg-2 { grid-template-columns: 1fr; }
+  .main { padding: 20px 16px 100px; }
+}
+</style>
+
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div>
+      <div class="topbar-title">AMA Report System</div>
+      <div class="topbar-sub">Accra Metropolitan Assembly · Digitalisation Project</div>
+    </div>
+    <div class="topbar-divider"></div>
+    <span class="chip chip-gold" id="current-month-chip">Loading...</span>
+  </div>
+  <div class="topbar-actions">
+    <label class="btn btn-ghost btn-sm" style="cursor:pointer;">
+      ⬆ Import JSON
+      <input type="file" accept=".json" style="display:none" id="import-input">
+    </label>
+    <button class="btn btn-ghost btn-sm" onclick="exportData()">⬇ Export JSON</button>
+    <button class="btn btn-primary btn-sm" onclick="saveAll()">💾 Save</button>
+  </div>
+</div>
+
+<!-- TABS NAV -->
+<div class="tabs-nav">
+  <button class="tab-btn active" onclick="switchTab('meta',this)"><span class="tab-dot"></span>Meta</button>
+  <button class="tab-btn" onclick="switchTab('overview',this)"><span class="tab-dot"></span>Overview</button>
+  <button class="tab-btn" onclick="switchTab('property',this)"><span class="tab-dot"></span>Property Rate</button>
+  <button class="tab-btn" onclick="switchTab('bop',this)"><span class="tab-dot"></span>BOP</button>
+  <button class="tab-btn" onclick="switchTab('signage',this)"><span class="tab-dot"></span>Commercial Signage</button>
+  <button class="tab-btn" onclick="switchTab('inspector',this)"><span class="tab-dot"></span>Inspector</button>
+  <button class="tab-btn" onclick="switchTab('financial',this)"><span class="tab-dot"></span>Financial Summary</button>
+  <button class="tab-btn" onclick="switchTab('historical',this)"><span class="tab-dot"></span>Historical Data</button>
+</div>
+
+<div class="main">
+  <div id="validation-box" class="validation-box">
+    <div class="validation-box-title">⚠ Please fix the following before generating:</div>
+    <ul id="validation-list"></ul>
+  </div>
+
+  <!-- ── META TAB ── -->
+  <div class="tab-panel active" id="tab-meta">
+    <div class="page-hd">
+      <div class="page-hd-left"><h2>Report Meta</h2><p>Set the month, year and period for this report. Changing the month updates all trend fields below.</p></div>
+    </div>
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Report Period</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-3">
+          <div class="field">
+            <label class="field-label">Month *</label>
+            <select id="meta-month" onchange="onMonthChange()" required>
+              <option>January</option><option>February</option><option>March</option>
+              <option>April</option><option>May</option><option>June</option>
+              <option>July</option><option>August</option><option>September</option>
+              <option>October</option><option>November</option><option>December</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Year *</label>
+            <input type="number" id="meta-year" placeholder="2026" required>
+          </div>
+          <div class="field">
+            <label class="field-label">Period String *</label>
+            <input type="text" id="meta-period" placeholder="1st January 2026 – 30th April 2026" required>
+            <div class="field-hint">Appears in all page headers</div>
+          </div>
+        </div>
+        <div style="margin-top:16px; padding:12px 16px; background:var(--g050); border-radius:var(--r2); border-left:3px solid var(--g400);">
+          <div style="font-size:13px; color:var(--g700); font-weight:600;">📅 How month selection works</div>
+          <div style="font-size:12.5px; color:var(--text-3); margin-top:4px; line-height:1.6;">
+            When you change the month, all trend fields across every tab update to show columns from <strong>January up to your selected month</strong>. 
+            Previous months are pre-filled from saved data. The new month's column is <strong>blank</strong> — ready for your new figures.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OVERVIEW TAB ── -->
+  <div class="tab-panel" id="tab-overview">
+    <div class="page-hd">
+      <div class="page-hd-left"><h2>Local Assembly Overview</h2><p>Top-level collections summary and platform usage.</p></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Total Collections — Current Month</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-3">
+          <div class="field"><label class="field-label">Total Collections (GHS) *</label><input type="number" id="ov-total" required></div>
+          <div class="field"><label class="field-label">Total Transactions *</label><input type="number" id="ov-transactions" required></div>
+          <div class="field"><label class="field-label">MoM Change (%)</label><input type="number" id="ov-mom" step="0.01"></div>
+        </div>
+        <div class="field" style="margin-top:12px; max-width:220px;">
+          <label class="field-label">MoM Direction</label>
+          <div class="dir-toggle">
+            <input type="radio" name="ov-mom-dir" id="ov-mom-up" value="up"><label for="ov-mom-up">▲ Up</label>
+            <input type="radio" name="ov-mom-dir" id="ov-mom-down" value="down"><label for="ov-mom-down">▼ Down</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Platform Usage (Transactions)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-4">
+          <div class="field"><label class="field-label">Inspector Portal</label><input type="number" id="ov-plat-ip"></div>
+          <div class="field"><label class="field-label">Customer Portal</label><input type="number" id="ov-plat-cp"></div>
+          <div class="field"><label class="field-label">Customer USSD</label><input type="number" id="ov-plat-cu"></div>
+          <div class="field"><label class="field-label">Inspector USSD</label><input type="number" id="ov-plat-iu"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Monthly Collections Trend (GHS)</div></div>
+      <div class="section-card-body">
+        <div id="ov-trend-fields" class="form-grid"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">YoY Comparison</div></div>
+      <div class="section-card-body">
+        <div class="sub-hd">2024 Collections (GHS)</div>
+        <div id="ov-yoy24-fields" class="form-grid"></div>
+        <div class="sub-hd" style="margin-top:20px;">2025 Collections (GHS)</div>
+        <div id="ov-yoy25-fields" class="form-grid"></div>
+        <div style="margin-top:16px;">
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 3 — Stat Card 1 (top right)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p3-c0-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p3-c0-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p3-c0-body" placeholder="Describe what drove overall YoY growth..."></textarea></div>
+      </div>
+    </div>
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 3 — Stat Card 2 (bottom right)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p3-c1-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p3-c1-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p3-c1-body" placeholder="Describe MoM movement and key drivers..."></textarea></div>
+      </div>
+    </div>
+        </div>
+      </div>
+    </div>
+  <div class="section-card" style="background:var(--g050);border-color:var(--g200);">
+    <div class="section-card-hd" style="background:var(--g050);"><div class="section-card-hd-icon"></div><div class="section-card-title" style="color:var(--g700);">Page 16 — Overall Collections Historical (right-side stat cards)</div></div>
+    <div class="section-card-body">
+      <p style="font-size:12px;color:var(--text-3);margin-bottom:12px;">These two cards appear on the right side of the Overall Collections Comparison page (page 16).</p>
+    </div>
+  </div>
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 16 — Stat Card 1 (historical benchmark)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p16-c0-val" placeholder="e.g. 35.43% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p16-c0-sub" placeholder="e.g. 2025 full year vs 2026 YTD"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p16-c0-body" placeholder="Describe performance vs prior years..."></textarea></div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 16 — Stat Card 2 (EOY projection)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p16-c1-val" placeholder="e.g. 35.43% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p16-c1-sub" placeholder="e.g. 2025 full year vs 2026 YTD"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p16-c1-body" placeholder="Describe end-of-year trajectory and projection..."></textarea></div>
+      </div>
+    </div>
+
+
+
+
+  </div>
+  <!-- ── PROPERTY RATE TAB ── -->
+  <div class="tab-panel" id="tab-property">
+    <div class="page-hd">
+      <div class="page-hd-left"><h2>Property Rate</h2><p>Collections, property status, platform, additions, and year-on-year performance.</p></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Collections Summary</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Total Collections (GHS) *</label><input type="number" id="pr-collections" required step="0.01"></div>
+          <div class="field"><label class="field-label">Total Transactions *</label><input type="number" id="pr-transactions" required></div>
+        </div>
+        <div class="sub-hd" style="margin-top:20px;">Property Status</div>
+        <div class="form-grid fg-3">
+          <div class="field"><label class="field-label">Paid Count</label><input type="number" id="pr-paid-count"></div>
+          <div class="field"><label class="field-label">Paid Value (GHS)</label><input type="number" id="pr-paid-value" step="0.01"></div>
+          <div class="field"></div>
+          <div class="field"><label class="field-label">Partially Paid Count</label><input type="number" id="pr-partial-count"></div>
+          <div class="field"><label class="field-label">Partially Paid Value (GHS)</label><input type="number" id="pr-partial-value" step="0.01"></div>
+          <div class="field"></div>
+          <div class="field"><label class="field-label">Unpaid Count</label><input type="number" id="pr-unpaid-count"></div>
+          <div class="field"><label class="field-label">Unpaid Value (GHS)</label><input type="number" id="pr-unpaid-value" step="0.01"></div>
+          <div class="field"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Platform Usage</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-4">
+          <div class="field"><label class="field-label">Inspector Portal</label><input type="number" id="pr-plat-ip"></div>
+          <div class="field"><label class="field-label">Customer Portal</label><input type="number" id="pr-plat-cp"></div>
+          <div class="field"><label class="field-label">Customer USSD</label><input type="number" id="pr-plat-cu"></div>
+          <div class="field"><label class="field-label">Inspector USSD</label><input type="number" id="pr-plat-iu"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Monthly Collections Trend (GHS)</div></div>
+      <div class="section-card-body">
+        <div id="pr-trend-fields" class="form-grid"></div>
+        <div class="form-grid fg-2" style="margin-top:16px;">
+          <div class="field"><label class="field-label">MoM Change (%)</label><input type="number" id="pr-mom" step="0.01"></div>
+          <div class="field"><label class="field-label">MoM Direction</label>
+            <div class="dir-toggle">
+              <input type="radio" name="pr-mom-dir" id="pr-mom-up" value="up"><label for="pr-mom-up">▲ Up</label>
+              <input type="radio" name="pr-mom-dir" id="pr-mom-down" value="down"><label for="pr-mom-down">▼ Down</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">New Properties Added</div></div>
+      <div class="section-card-body">
+        <div id="pr-np-fields" class="form-grid"></div>
+        <div style="margin-top:16px;">
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 5 — New Properties Callout Card</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p5-np-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p5-np-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p5-np-body" placeholder="Describe new property additions and their impact..."></textarea></div>
+      </div>
+    </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Past Payments Applied (GHS)</div></div>
+      <div class="section-card-body">
+        <div id="pr-pp-fields" class="form-grid"></div>
+        <div style="margin-top:16px;">
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 5 — Past Payments Callout Card</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p5-pp-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p5-pp-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p5-pp-body" placeholder="Describe past payments applied and properties covered..."></textarea></div>
+      </div>
+    </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Year-on-Year — 2025 Collections (GHS)</div></div>
+      <div class="section-card-body">
+        <div id="pr-yoy-fields" class="form-grid"></div>
+        <div class="form-grid fg-2" style="margin-top:16px;">
+          <div class="field"><label class="field-label">YoY Change QTD (%)</label><input type="number" id="pr-yoy-change-qtd" step="0.01"></div>
+          <div class="field"><label class="field-label">YTD vs 2024 Full Year (%)</label><input type="number" id="pr-hist-pct" step="0.01"></div>
+        </div>
+        <div style="margin-top:16px;">
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 6 — YoY Stat Card 1 (QTD comparison)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p6-c0-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p6-c0-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p6-c0-body" placeholder="Describe the year-to-date performance vs prior year..."></textarea></div>
+      </div>
+    </div>
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 6 — YoY Stat Card 2 (month comparison)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p6-c1-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p6-c1-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p6-c1-body" placeholder="Describe the month-specific YoY movement..."></textarea></div>
+      </div>
+    </div>
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 7 — Historical Stat Card 1</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p7-c0-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p7-c0-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p7-c0-body" placeholder="Describe performance vs 2024 full year..."></textarea></div>
+      </div>
+    </div>
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 7 — Historical Stat Card 2 (YTD pace)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p7-c1-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p7-c1-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p7-c1-body" placeholder="Describe YTD pace vs 2025 full year..."></textarea></div>
+      </div>
+    </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Commentary</div></div>
+      <div class="section-card-body">
+        <div class="field"><textarea id="pr-commentary" placeholder="Describe what drove property rate collections this month..."></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BOP TAB ── -->
+  <div class="tab-panel" id="tab-bop">
+    <div class="page-hd">
+      <div class="page-hd-left"><h2>Business Operating Permit</h2><p>BOP collections, business status, platform, and business type breakdown.</p></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Collections Summary</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Total Collections (GHS) *</label><input type="number" id="bop-collections" required step="0.01"></div>
+          <div class="field"><label class="field-label">Total Transactions *</label><input type="number" id="bop-transactions" required></div>
+        </div>
+        <div class="sub-hd" style="margin-top:20px;">Business Status</div>
+        <div class="form-grid fg-3">
+          <div class="field"><label class="field-label">Paid Count</label><input type="number" id="bop-paid-count"></div>
+          <div class="field"><label class="field-label">Paid Value (GHS)</label><input type="number" id="bop-paid-value" step="0.01"></div>
+          <div class="field"></div>
+          <div class="field"><label class="field-label">Partially Paid Count</label><input type="number" id="bop-partial-count"></div>
+          <div class="field"><label class="field-label">Partially Paid Value (GHS)</label><input type="number" id="bop-partial-value" step="0.01"></div>
+          <div class="field"></div>
+          <div class="field"><label class="field-label">Unpaid Count</label><input type="number" id="bop-unpaid-count"></div>
+          <div class="field"><label class="field-label">Unpaid Value (GHS)</label><input type="number" id="bop-unpaid-value" step="0.01"></div>
+          <div class="field"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Platform Usage</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-4">
+          <div class="field"><label class="field-label">Inspector Portal</label><input type="number" id="bop-plat-ip"></div>
+          <div class="field"><label class="field-label">Customer Portal</label><input type="number" id="bop-plat-cp"></div>
+          <div class="field"><label class="field-label">Customer USSD</label><input type="number" id="bop-plat-cu"></div>
+          <div class="field"><label class="field-label">Inspector USSD</label><input type="number" id="bop-plat-iu"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Monthly Collections Trend (GHS)</div></div>
+      <div class="section-card-body">
+        <div id="bop-trend-fields" class="form-grid"></div>
+        <div class="form-grid fg-2" style="margin-top:16px;">
+          <div class="field"><label class="field-label">MoM Change (%)</label><input type="number" id="bop-mom" step="0.01"></div>
+          <div class="field"><label class="field-label">MoM Direction</label>
+            <div class="dir-toggle">
+              <input type="radio" name="bop-mom-dir" id="bop-mom-up" value="up"><label for="bop-mom-up">▲ Up</label>
+              <input type="radio" name="bop-mom-dir" id="bop-mom-down" value="down"><label for="bop-mom-down">▼ Down</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">New Businesses Added</div></div>
+      <div class="section-card-body">
+        <div id="bop-nb-fields" class="form-grid"></div>
+        <div style="margin-top:16px;">
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 9 — New Businesses Callout Card</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p9-nb-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p9-nb-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p9-nb-body" placeholder="Describe new business additions and revenue impact..."></textarea></div>
+      </div>
+    </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Past Payments Applied (GHS)</div></div>
+      <div class="section-card-body">
+        <div id="bop-pp-fields" class="form-grid"></div>
+        <div style="margin-top:16px;">
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 9 — Past Payments Callout Card</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p9-pp-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p9-pp-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p9-pp-body" placeholder="Describe past payments applied and businesses covered..."></textarea></div>
+      </div>
+    </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Collections by Business Type</div></div>
+      <div class="section-card-body">
+        <p style="font-size:12px;color:var(--text-3);margin-bottom:12px;">Edit the three stat cards on the right side of page 10 (Business Type Compliance).</p>
+            <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Stat Card 1 (e.g. Universal Banks)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p10-c0-val" placeholder="e.g. 89.44%"></div>
+          <div class="field"><label class="field-label">Subtitle</label><input type="text" id="p10-c0-sub" placeholder="e.g. Universal Banks compliance rate"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p10-c0-body" placeholder="Describe compliance rate and collected vs expected..."></textarea></div>
+      </div>
+    </div>
+            <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Stat Card 2 (e.g. Commercial Houses)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p10-c1-val" placeholder="e.g. 89.44%"></div>
+          <div class="field"><label class="field-label">Subtitle</label><input type="text" id="p10-c1-sub" placeholder="e.g. Universal Banks compliance rate"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p10-c1-body" placeholder="Describe compliance rate and performance..."></textarea></div>
+      </div>
+    </div>
+            <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Stat Card 3 (e.g. Un-bonded Warehouses)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p10-c2-val" placeholder="e.g. 89.44%"></div>
+          <div class="field"><label class="field-label">Subtitle</label><input type="text" id="p10-c2-sub" placeholder="e.g. Universal Banks compliance rate"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p10-c2-body" placeholder="Describe progress and enforcement opportunities..."></textarea></div>
+      </div>
+    </div>
+        <div style="overflow-x:auto;">
+          <table class="biz-table">
+            <thead><tr><th style="width:240px;">Business Type</th><th>Expected Revenue (GHS)</th><th>Collected Revenue (GHS)</th></tr></thead>
+            <tbody id="biz-type-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Year-on-Year — 2024 Collections (GHS)</div></div>
+      <div class="section-card-body">
+        <div id="bop-yoy24-fields" class="form-grid"></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Year-on-Year — 2025 Collections (GHS)</div></div>
+      <div class="section-card-body">
+        <div id="bop-yoy25-fields" class="form-grid"></div>
+        <div class="form-grid fg-2" style="margin-top:16px;">
+          <div class="field"><label class="field-label">YTD % of 2025 Total</label><input type="number" id="bop-ytd-pct" step="0.01"></div>
+          <div class="field"><label class="field-label">YTD vs 2023 Full Year (%)</label><input type="number" id="bop-hist-pct" step="0.01"></div>
+        </div>
+        <div style="margin-top:16px;">
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 11 — BOP YoY Stat Card 1 (January comparison)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p11-c0-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p11-c0-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p11-c0-body" placeholder="Describe January performance vs prior year..."></textarea></div>
+      </div>
+    </div>
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 11 — BOP YoY Stat Card 2 (current month)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p11-c1-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p11-c1-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p11-c1-body" placeholder="Describe current month performance vs prior year..."></textarea></div>
+      </div>
+    </div>
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 12 — BOP Historical Stat Card 1</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p12-c0-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p12-c0-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p12-c0-body" placeholder="Describe BOP performance vs 2023 full year..."></textarea></div>
+      </div>
+    </div>
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 12 — BOP Historical Stat Card 2</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p12-c1-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p12-c1-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p12-c1-body" placeholder="Describe YTD pace vs 2025 full year..."></textarea></div>
+      </div>
+    </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Commentary</div></div>
+      <div class="section-card-body">
+        <div class="field"><textarea id="bop-commentary" placeholder="Describe what drove BOP collections this month..."></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SIGNAGE TAB ── -->
+  <div class="tab-panel" id="tab-signage">
+    <div class="page-hd">
+      <div class="page-hd-left"><h2>Commercial Signage</h2><p>Signage collections, status, platform, and year-on-year comparison.</p></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Collections Summary</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Total Collections (GHS) *</label><input type="number" id="cs-collections" required step="0.01"></div>
+          <div class="field"><label class="field-label">Total Transactions *</label><input type="number" id="cs-transactions" required></div>
+        </div>
+        <div class="sub-hd" style="margin-top:20px;">Signage Status</div>
+        <div class="form-grid fg-3">
+          <div class="field"><label class="field-label">Paid Count</label><input type="number" id="cs-paid-count"></div>
+          <div class="field"><label class="field-label">Paid Value (GHS)</label><input type="number" id="cs-paid-value" step="0.01"></div>
+          <div class="field"></div>
+          <div class="field"><label class="field-label">Partially Paid Count</label><input type="number" id="cs-partial-count"></div>
+          <div class="field"><label class="field-label">Partially Paid Value (GHS)</label><input type="number" id="cs-partial-value" step="0.01"></div>
+          <div class="field"></div>
+          <div class="field"><label class="field-label">Unpaid Count</label><input type="number" id="cs-unpaid-count"></div>
+          <div class="field"><label class="field-label">Unpaid Value (GHS)</label><input type="number" id="cs-unpaid-value" step="0.01"></div>
+          <div class="field"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Platform & Monthly Trend</div></div>
+      <div class="section-card-body">
+        <div class="sub-hd">Platform Transactions</div>
+        <div class="form-grid fg-3">
+          <div class="field"><label class="field-label">Customer Portal</label><input type="number" id="cs-plat-cp"></div>
+          <div class="field"><label class="field-label">Collectors Portal</label><input type="number" id="cs-plat-col"></div>
+          <div class="field"><label class="field-label">Customer USSD</label><input type="number" id="cs-plat-cu"></div>
+        </div>
+        <div class="sub-hd" style="margin-top:20px;">Monthly Collections Trend (GHS)</div>
+        <div id="cs-trend-fields" class="form-grid"></div>
+        <div class="form-grid fg-2" style="margin-top:16px;">
+          <div class="field"><label class="field-label">MoM Change (%)</label><input type="number" id="cs-mom" step="0.01"></div>
+          <div class="field"><label class="field-label">MoM Direction</label>
+            <div class="dir-toggle">
+              <input type="radio" name="cs-mom-dir" id="cs-mom-up" value="up"><label for="cs-mom-up">▲ Up</label>
+              <input type="radio" name="cs-mom-dir" id="cs-mom-down" value="down"><label for="cs-mom-down">▼ Down</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Year-on-Year — 2025 Collections (GHS)</div></div>
+      <div class="section-card-body">
+        <div id="cs-yoy25-fields" class="form-grid"></div>
+        <div style="margin-top:16px;">
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 14 — Signage YoY Stat Card 1</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p14-c0-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p14-c0-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p14-c0-body" placeholder="Describe signage YoY movement..."></textarea></div>
+      </div>
+    </div>
+          <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Page 14 — Signage YoY Stat Card 2</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Callout Value (free text)</label><input type="text" id="p14-c1-val" placeholder="e.g. +74.29% or GHS 48M BY EOY"></div>
+          <div class="field"><label class="field-label">Subtitle (bold, shown below value)</label><input type="text" id="p14-c1-sub" placeholder="e.g. January – March 2026 vs 2025"></div>
+        </div>
+        <div class="field" style="margin-top:10px;"><label class="field-label">Commentary</label><textarea id="p14-c1-body" placeholder="Describe customer-led payment behaviour..."></textarea></div>
+      </div>
+    </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Commentary</div></div>
+      <div class="section-card-body">
+        <div class="field"><textarea id="cs-commentary" placeholder="Describe signage collection activity this month..."></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── INSPECTOR TAB ── -->
+  <div class="tab-panel" id="tab-inspector">
+    <div class="page-hd">
+      <div class="page-hd-left"><h2>Inspector Collections</h2><p>Inspector-led collections by revenue line and platform.</p></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Inspector Collections Summary</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Total Inspector Collections (GHS) *</label><input type="number" id="ins-total" required step="0.01"></div>
+          <div class="field"><label class="field-label">Total Transactions *</label><input type="number" id="ins-transactions" required></div>
+        </div>
+        <div class="sub-hd" style="margin-top:20px;">By Revenue Line</div>
+        <div class="form-grid fg-3">
+          <div class="field"><label class="field-label">Property Rate (GHS)</label><input type="number" id="ins-pr" step="0.01"></div>
+          <div class="field"><label class="field-label">PR Transactions</label><input type="number" id="ins-pr-tx"></div>
+          <div class="field"></div>
+          <div class="field"><label class="field-label">BOP (GHS)</label><input type="number" id="ins-bop" step="0.01"></div>
+          <div class="field"><label class="field-label">BOP Transactions</label><input type="number" id="ins-bop-tx"></div>
+          <div class="field"></div>
+          <div class="field"><label class="field-label">Commercial Signage (GHS)</label><input type="number" id="ins-cs" step="0.01"></div>
+          <div class="field"><label class="field-label">Signage Transactions</label><input type="number" id="ins-cs-tx"></div>
+          <div class="field"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Platform & Monthly Trend</div></div>
+      <div class="section-card-body">
+        <div class="sub-hd">Platform Transactions</div>
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Inspector Portal</label><input type="number" id="ins-plat-ip"></div>
+          <div class="field"><label class="field-label">Inspector USSD</label><input type="number" id="ins-plat-iu"></div>
+        </div>
+        <div class="sub-hd" style="margin-top:20px;">Monthly Inspector Collections (GHS)</div>
+        <div id="ins-trend-fields" class="form-grid"></div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Commentary</div></div>
+      <div class="section-card-body">
+        <div class="field"><label class="field-label">Inspector Collections Commentary</label><textarea id="ins-commentary" placeholder="Describe inspector collection activity, platform dominance, trends..."></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FINANCIAL TAB ── -->
+  <div class="tab-panel" id="tab-financial">
+    <div class="page-hd">
+      <div class="page-hd-left"><h2>Financial Summary</h2><p>Transfers, sweeps and balance for the Accra Metropolitan Assembly.</p></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">AMA Share & Latest Sweep</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-3">
+          <div class="field"><label class="field-label">AMA Revenue Share (%)</label><input type="number" id="fin-ama-pct" value="70" step="0.01"><div class="field-hint">Usually 70%</div></div>
+          <div class="field"><label class="field-label">Latest Sweep Date</label><input type="text" id="fin-sweep-date" placeholder="12/03/2026"></div>
+          <div class="field"><label class="field-label">Latest Sweep Amount (GHS)</label><input type="number" id="fin-sweep-amount" step="0.01"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Transfers / Sweeps</div></div>
+      <div class="section-card-body">
+        <div class="transfer-row-hd"><span>Date</span><span>Amount (GHS)</span><span></span></div>
+        <div id="transfers-list"></div>
+        <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="addTransfer()">+ Add Transfer</button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Balance</div></div>
+      <div class="section-card-body">
+        <div class="form-grid fg-2">
+          <div class="field"><label class="field-label">Remaining Balance (GHS)</label><input type="number" id="fin-balance" step="0.01"><div class="field-hint">Revenue Due AMA minus Total Transfers</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── HISTORICAL TAB ── -->
+  <div class="tab-panel" id="tab-historical">
+    <div class="page-hd">
+      <div class="page-hd-left"><h2>Historical Data</h2><p>Full-year totals for 2021–2025. These carry forward every month and power the historical comparison charts.</p></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Property Rate — Full Year Totals (GHS)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid" style="grid-template-columns:repeat(5,1fr);">
+          <div class="field"><label class="field-label">2021</label><input type="number" id="hist-pr-2021" step="0.01"></div>
+          <div class="field"><label class="field-label">2022</label><input type="number" id="hist-pr-2022" step="0.01"></div>
+          <div class="field"><label class="field-label">2023</label><input type="number" id="hist-pr-2023" step="0.01"></div>
+          <div class="field"><label class="field-label">2024</label><input type="number" id="hist-pr-2024" step="0.01"></div>
+          <div class="field"><label class="field-label">2025</label><input type="number" id="hist-pr-2025" step="0.01"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">BOP — Full Year Totals (GHS)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid" style="grid-template-columns:repeat(5,1fr);">
+          <div class="field"><label class="field-label">2021</label><input type="number" id="hist-bop-2021" step="0.01"></div>
+          <div class="field"><label class="field-label">2022</label><input type="number" id="hist-bop-2022" step="0.01"></div>
+          <div class="field"><label class="field-label">2023</label><input type="number" id="hist-bop-2023" step="0.01"></div>
+          <div class="field"><label class="field-label">2024</label><input type="number" id="hist-bop-2024" step="0.01"></div>
+          <div class="field"><label class="field-label">2025</label><input type="number" id="hist-bop-2025" step="0.01"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Overall Total — Full Year (GHS)</div></div>
+      <div class="section-card-body">
+        <div class="form-grid" style="grid-template-columns:repeat(5,1fr);">
+          <div class="field"><label class="field-label">2021</label><input type="number" id="hist-ov-2021" step="0.01"></div>
+          <div class="field"><label class="field-label">2022</label><input type="number" id="hist-ov-2022" step="0.01"></div>
+          <div class="field"><label class="field-label">2023</label><input type="number" id="hist-ov-2023" step="0.01"></div>
+          <div class="field"><label class="field-label">2024</label><input type="number" id="hist-ov-2024" step="0.01"></div>
+          <div class="field"><label class="field-label">2025</label><input type="number" id="hist-ov-2025" step="0.01"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<button class="generate-fab" onclick="generateReport()">▶ Generate Report</button>
+<div class="toast" id="toast"><span class="toast-icon">✓</span><span id="toast-msg">Saved</span></div>
+
+<script>
+// ================================================================
+// CORE STATE
+// ================================================================
+let currentData = null;
+let currentMonth = 'March'; // tracks which month is selected
+
+// ================================================================
+// TABS
+// ================================================================
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('validation-box').classList.remove('show');
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+function showToast(msg, duration=2800) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ================================================================
+// DYNAMIC MONTH FIELDS
+// ================================================================
+
+// Build grid columns — one per month up to selected month.
+// For the current (new) month: blank + highlighted.
+// For previous months: pre-filled from saved data.
+function buildMonthFields(containerId, dataObj, monthKey, isNew) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const months = monthsUpTo(currentMonth);
+  const cols = Math.min(months.length, 6); // max 6 per row looks clean
+  container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  container.innerHTML = '';
+
+  months.forEach(m => {
+    const label = MONTH_LABELS[MONTHS.indexOf(m)];
+    const isCurrentMonth = m === currentMonth.toLowerCase();
+    const savedVal = dataObj && dataObj[m] !== null && dataObj[m] !== undefined ? dataObj[m] : '';
+
+    const div = document.createElement('div');
+    div.className = 'field';
+
+    const lbl = document.createElement('label');
+    lbl.className = 'field-label';
+    lbl.textContent = label;
+    if (isCurrentMonth) {
+      lbl.style.color = 'var(--g500)';
+      lbl.textContent = '★ ' + label + ' (new)';
+    }
+
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.step = '0.01';
+    inp.id = `dyn-${containerId}-${m}`;
+    inp.dataset.month = m;
+
+    if (isCurrentMonth) {
+      // New month — blank, highlighted border
+      inp.value = '';
+      inp.style.borderColor = 'var(--g400)';
+      inp.style.background = 'var(--g010)';
+      inp.placeholder = 'Enter value';
+    } else {
+      // Previous month — pre-filled, slightly muted
+      inp.value = savedVal !== '' ? savedVal : '';
+      inp.style.background = '#fafcfb';
+      inp.style.color = 'var(--text-3)';
+    }
+
+    div.appendChild(lbl);
+    div.appendChild(inp);
+    container.appendChild(div);
+  });
+}
+
+// Rebuild ALL dynamic month field groups
+function rebuildAllMonthFields(d) {
+  buildMonthFields('ov-trend-fields',  d.overview.monthly_trend,          'overview');
+  buildMonthFields('ov-yoy24-fields',  d.overall.yoy_2024,                'ov-yoy24');
+  buildMonthFields('ov-yoy25-fields',  d.overall.yoy_2025,                'ov-yoy25');
+  buildMonthFields('pr-trend-fields',  d.property_rate.monthly_trend,     'pr-trend');
+  buildMonthFields('pr-np-fields',     d.property_rate.new_properties,    'pr-np');
+  buildMonthFields('pr-pp-fields',     d.property_rate.past_payments,     'pr-pp');
+  buildMonthFields('pr-yoy-fields',    d.property_rate.yoy_2025,          'pr-yoy');
+  buildMonthFields('bop-trend-fields', d.bop.monthly_trend,               'bop-trend');
+  buildMonthFields('bop-nb-fields',    d.bop.new_businesses,              'bop-nb');
+  buildMonthFields('bop-pp-fields',    d.bop.past_payments,               'bop-pp');
+  buildMonthFields('bop-yoy24-fields', d.bop.yoy_2024,                    'bop-yoy24');
+  buildMonthFields('bop-yoy25-fields', d.bop.yoy_2025,                    'bop-yoy25');
+  buildMonthFields('cs-trend-fields',  d.signage.monthly_trend,           'cs-trend');
+  buildMonthFields('cs-yoy25-fields',  d.signage.yoy_2025,                'cs-yoy25');
+  buildMonthFields('ins-trend-fields', d.inspector.monthly_trend,         'ins-trend');
+}
+
+// ================================================================
+// ON MONTH CHANGE — triggered when meta-month select changes
+// ================================================================
+function onMonthChange() {
+  currentMonth = document.getElementById('meta-month').value;
+  // Save current dynamic field values back into currentData first
+  readDynamicFields(currentData);
+  // Rebuild all fields for new month selection
+  rebuildAllMonthFields(currentData);
+  document.getElementById('current-month-chip').textContent =
+    `${currentMonth} ${document.getElementById('meta-year').value || ''}`.trim();
+}
+
+// ================================================================
+// READ dynamic fields back into a data object
+// ================================================================
+function readDynamicFields(d) {
+  function readGroup(containerId, target) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.querySelectorAll('input[data-month]').forEach(inp => {
+      const m = inp.dataset.month;
+      const v = inp.value === '' ? null : parseFloat(inp.value);
+      if (target) target[m] = isNaN(v) ? null : v;
+    });
+  }
+  readGroup('ov-trend-fields',  d.overview.monthly_trend);
+  readGroup('ov-yoy24-fields',  d.overall.yoy_2024);
+  readGroup('ov-yoy25-fields',  d.overall.yoy_2025);
+  readGroup('pr-trend-fields',  d.property_rate.monthly_trend);
+  readGroup('pr-np-fields',     d.property_rate.new_properties);
+  readGroup('pr-pp-fields',     d.property_rate.past_payments);
+  readGroup('pr-yoy-fields',    d.property_rate.yoy_2025);
+  readGroup('bop-trend-fields', d.bop.monthly_trend);
+  readGroup('bop-nb-fields',    d.bop.new_businesses);
+  readGroup('bop-pp-fields',    d.bop.past_payments);
+  readGroup('bop-yoy24-fields', d.bop.yoy_2024);
+  readGroup('bop-yoy25-fields', d.bop.yoy_2025);
+  readGroup('cs-trend-fields',  d.signage.monthly_trend);
+  readGroup('cs-yoy25-fields',  d.signage.yoy_2025);
+  readGroup('ins-trend-fields', d.inspector.monthly_trend);
+  // Also sync yoy_2026 from overview trend
+  MONTHS.forEach(m => { d.overall.yoy_2026[m] = d.overview.monthly_trend[m]; });
+}
+
+// ================================================================
+// STATIC FIELD HELPERS
+// ================================================================
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.tagName === 'SELECT') el.value = val;
+  else el.value = (val !== null && val !== undefined) ? val : '';
+}
+function setRadio(name, val) {
+  const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+  if (el) el.checked = true;
+}
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+function getNum(id) {
+  const v = parseFloat(getVal(id));
+  return isNaN(v) ? 0 : v;
+}
+function getRadio(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : 'up';
+}
+
+// ================================================================
+// POPULATE STATIC FIELDS
+// ================================================================
+function populateStaticFields(d, h) {
+  setVal('meta-month',  d.meta.month);
+  setVal('meta-year',   d.meta.year);
+  setVal('meta-period', d.meta.period);
+
+  setVal('ov-total',        d.overview.total_collections);
+  setVal('ov-transactions', d.overview.total_transactions);
+  setVal('ov-mom',          d.overview.mom_change);
+  setRadio('ov-mom-dir',    d.overview.mom_direction || 'up');
+  setVal('ov-plat-ip', d.overview.platform.inspector_portal);
+  setVal('ov-plat-cp', d.overview.platform.customer_portal);
+  setVal('ov-plat-cu', d.overview.platform.customer_ussd);
+  setVal('ov-plat-iu', d.overview.platform.inspector_ussd);
+  setVal('ov-yoy-change', d.overall.yoy_change_march);
+  setVal('ov-ytd-pct',    d.overall.ytd_pct_of_2025);
+  setVal('ov-eoy',        d.overall.eoy_projection);
+
+  setVal('pr-collections',  d.property_rate.collections);
+  setVal('pr-transactions', d.property_rate.transactions);
+  setVal('pr-paid-count',   d.property_rate.paid_count);
+  setVal('pr-paid-value',   d.property_rate.paid_value);
+  setVal('pr-partial-count',d.property_rate.partial_count);
+  setVal('pr-partial-value',d.property_rate.partial_value);
+  setVal('pr-unpaid-count', d.property_rate.unpaid_count);
+  setVal('pr-unpaid-value', d.property_rate.unpaid_value);
+  setVal('pr-plat-ip', d.property_rate.platform.inspector_portal);
+  setVal('pr-plat-cp', d.property_rate.platform.customer_portal);
+  setVal('pr-plat-cu', d.property_rate.platform.customer_ussd);
+  setVal('pr-plat-iu', d.property_rate.platform.inspector_ussd);
+  setVal('pr-mom',       d.property_rate.mom_change);
+  setRadio('pr-mom-dir', d.property_rate.mom_direction || 'up');
+  setVal('pr-np-value',     d.property_rate.new_properties_value);
+  setVal('pr-np-collected', d.property_rate.new_properties_collected);
+  setVal('pr-pp-props', d.property_rate.past_payments_properties);
+  setVal('pr-yoy-change-march', d.property_rate.yoy_change_march);
+  setVal('pr-yoy-change-qtd',   d.property_rate.yoy_change_qtd);
+  setVal('pr-ytd-pct',  d.property_rate.ytd_pct_of_2025);
+  setVal('pr-hist-pct', d.property_rate.historical_pct_vs_2024);
+  setVal('pr-commentary', d.property_rate.commentary);
+
+  setVal('bop-collections',  d.bop.collections);
+  setVal('bop-transactions', d.bop.transactions);
+  setVal('bop-paid-count',   d.bop.paid_count);
+  setVal('bop-paid-value',   d.bop.paid_value);
+  setVal('bop-partial-count',d.bop.partial_count);
+  setVal('bop-partial-value',d.bop.partial_value);
+  setVal('bop-unpaid-count', d.bop.unpaid_count);
+  setVal('bop-unpaid-value', d.bop.unpaid_value);
+  setVal('bop-plat-ip', d.bop.platform.inspector_portal);
+  setVal('bop-plat-cp', d.bop.platform.customer_portal);
+  setVal('bop-plat-cu', d.bop.platform.customer_ussd);
+  setVal('bop-plat-iu', d.bop.platform.inspector_ussd);
+  setVal('bop-mom',       d.bop.mom_change);
+  setRadio('bop-mom-dir', d.bop.mom_direction || 'up');
+  setVal('bop-nb-value',     d.bop.new_businesses_value);
+  setVal('bop-nb-collected', d.bop.new_businesses_collected);
+  setVal('bop-pp-biz', d.bop.past_payments_businesses);
+  setVal('bop-comp-banks',      d.bop.compliance_banks);
+  setVal('bop-comp-commercial', d.bop.compliance_commercial);
+  setVal('bop-comp-warehouse',  d.bop.compliance_warehouse);
+  setVal('bop-yoy-jan-chg', d.bop.yoy_change_jan);
+  setVal('bop-yoy-mar-chg', d.bop.yoy_change_march);
+  setVal('bop-ytd-pct',  d.bop.ytd_pct_of_2025);
+  setVal('bop-hist-pct', d.bop.historical_pct_vs_2023);
+  setVal('bop-commentary', d.bop.commentary);
+  buildBizTypeTable(d.bop.business_types);
+
+  setVal('cs-collections',  d.signage.collections);
+  setVal('cs-transactions', d.signage.transactions);
+  setVal('cs-paid-count',   d.signage.paid_count);
+  setVal('cs-paid-value',   d.signage.paid_value);
+  setVal('cs-partial-count',d.signage.partial_count);
+  setVal('cs-partial-value',d.signage.partial_value);
+  setVal('cs-unpaid-count', d.signage.unpaid_count);
+  setVal('cs-unpaid-value', d.signage.unpaid_value);
+  setVal('cs-plat-cp',  d.signage.platform.customer_portal);
+  setVal('cs-plat-col', d.signage.platform.collectors_portal);
+  setVal('cs-plat-cu',  d.signage.platform.customer_ussd);
+  setVal('cs-mom',        d.signage.mom_change);
+  setRadio('cs-mom-dir', d.signage.mom_direction || 'up');
+  setVal('cs-commentary', d.signage.commentary);
+
+  setVal('ins-total',        d.inspector.total_collections);
+  setVal('ins-transactions', d.inspector.total_transactions);
+  setVal('ins-pr',    d.inspector.property_rate);
+  setVal('ins-pr-tx', d.inspector.property_rate_transactions);
+  setVal('ins-bop',    d.inspector.bop);
+  setVal('ins-bop-tx', d.inspector.bop_transactions);
+  setVal('ins-cs',    d.inspector.signage);
+  setVal('ins-cs-tx', d.inspector.signage_transactions);
+  setVal('ins-plat-ip', d.inspector.platform.inspector_portal);
+  setVal('ins-plat-iu', d.inspector.platform.inspector_ussd);
+
+  setVal('fin-ama-pct',      d.financial.ama_share_pct);
+  setVal('fin-sweep-date',   d.financial.latest_sweep_date);
+  setVal('fin-sweep-amount', d.financial.latest_sweep_amount);
+  setVal('fin-balance',      d.financial.balance);
+  buildTransfersList(d.financial.transfers);
+
+  // ── CALLOUT FIELDS ──
+  function setCalloutFields(prefix, c) {
+    if (!c) return;
+    setVal(prefix+'-val',  c.value||'');
+    setVal(prefix+'-sub',  c.subtitle||'');
+    setVal(prefix+'-body', c.commentary||'');
+  }
+  function setCalloutArr(prefix, arr, count) {
+    if (!Array.isArray(arr)) return;
+    for (let i=0; i<count; i++) setCalloutFields(prefix+'c'+i, arr[i]);
+  }
+  if (d.callouts) {
+    const CL = d.callouts;
+    if (CL.overall_yoy)      { setCalloutFields('p3-c0-', CL.overall_yoy[0]); setCalloutFields('p3-c1-', CL.overall_yoy[1]); }
+    if (CL.pr_new_properties) setCalloutFields('p5-np-', CL.pr_new_properties);
+    if (CL.pr_past_payments)  setCalloutFields('p5-pp-', CL.pr_past_payments);
+    if (CL.pr_yoy)           { setCalloutFields('p6-c0-', CL.pr_yoy[0]); setCalloutFields('p6-c1-', CL.pr_yoy[1]); }
+    if (CL.pr_historical)    { setCalloutFields('p7-c0-', CL.pr_historical[0]); setCalloutFields('p7-c1-', CL.pr_historical[1]); }
+    if (CL.bop_new_businesses) setCalloutFields('p9-nb-', CL.bop_new_businesses);
+    if (CL.bop_past_payments)  setCalloutFields('p9-pp-', CL.bop_past_payments);
+    if (CL.bop_compliance)    {
+      setCalloutFields('p10-c0-', CL.bop_compliance[0]);
+      setCalloutFields('p10-c1-', CL.bop_compliance[1]);
+      setCalloutFields('p10-c2-', CL.bop_compliance[2]);
+    }
+    if (CL.bop_yoy)          { setCalloutFields('p11-c0-', CL.bop_yoy[0]); setCalloutFields('p11-c1-', CL.bop_yoy[1]); }
+    if (CL.bop_historical)   { setCalloutFields('p12-c0-', CL.bop_historical[0]); setCalloutFields('p12-c1-', CL.bop_historical[1]); }
+    if (CL.cs_yoy)           { setCalloutFields('p14-c0-', CL.cs_yoy[0]); setCalloutFields('p14-c1-', CL.cs_yoy[1]); }
+    if (CL.overall_historical){ setCalloutFields('p16-c0-', CL.overall_historical[0]); setCalloutFields('p16-c1-', CL.overall_historical[1]); }
+  }
+  if (d.inspector && d.inspector.commentary) setVal('ins-commentary', d.inspector.commentary);
+
+    setVal('hist-pr-2021', h.property_rate[2021]);
+  setVal('hist-pr-2022', h.property_rate[2022]);
+  setVal('hist-pr-2023', h.property_rate[2023]);
+  setVal('hist-pr-2024', h.property_rate[2024]);
+  setVal('hist-pr-2025', h.property_rate[2025]);
+  setVal('hist-bop-2021', h.bop[2021]);
+  setVal('hist-bop-2022', h.bop[2022]);
+  setVal('hist-bop-2023', h.bop[2023]);
+  setVal('hist-bop-2024', h.bop[2024]);
+  setVal('hist-bop-2025', h.bop[2025]);
+  setVal('hist-ov-2021', h.overall[2021]);
+  setVal('hist-ov-2022', h.overall[2022]);
+  setVal('hist-ov-2023', h.overall[2023]);
+  setVal('hist-ov-2024', h.overall[2024]);
+  setVal('hist-ov-2025', h.overall[2025]);
+}
+
+// ================================================================
+// BIZ TYPE TABLE
+// ================================================================
+function buildBizTypeTable(types) {
+  const tbody = document.getElementById('biz-type-tbody');
+  tbody.innerHTML = '';
+  types.forEach((t, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${t.name}</td>
+      <td><input type="number" step="0.01" id="biz-exp-${i}" value="${t.expected}"></td>
+      <td><input type="number" step="0.01" id="biz-col-${i}" value="${t.collected}"></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ================================================================
+// TRANSFERS
+// ================================================================
+let transferCount = 0;
+function buildTransfersList(transfers) {
+  document.getElementById('transfers-list').innerHTML = '';
+  transferCount = 0;
+  transfers.forEach(t => addTransfer(t.date, t.amount));
+}
+function addTransfer(date='', amount='') {
+  const list = document.getElementById('transfers-list');
+  const id = transferCount++;
+  const row = document.createElement('div');
+  row.className = 'transfer-row';
+  row.id = `tr-row-${id}`;
+  row.innerHTML = `
+    <input type="text" placeholder="DD/MM/YYYY" value="${date}" id="tr-date-${id}">
+    <input type="number" step="0.01" placeholder="0.00" value="${amount||''}" id="tr-amount-${id}">
+    <button class="btn-remove" onclick="removeTransfer('tr-row-${id}')" title="Remove">×</button>`;
+  list.appendChild(row);
+}
+function removeTransfer(rowId) { document.getElementById(rowId)?.remove(); }
+
+// ================================================================
+// READ FULL FORM → DATA OBJECT
+// ================================================================
+function readForm() {
+  const d = JSON.parse(JSON.stringify(currentData));
+
+  // Read all dynamic month fields
+  readDynamicFields(d);
+
+  // Meta
+  d.meta.month  = getVal('meta-month');
+  d.meta.year   = getVal('meta-year');
+  d.meta.period = getVal('meta-period');
+
+  // Overview
+  d.overview.total_collections  = getNum('ov-total');
+  d.overview.total_transactions = getNum('ov-transactions');
+  d.overview.mom_change         = getNum('ov-mom');
+  d.overview.mom_direction      = getRadio('ov-mom-dir');
+  d.overview.platform = {
+    inspector_portal: getNum('ov-plat-ip'), customer_portal: getNum('ov-plat-cp'),
+    customer_ussd: getNum('ov-plat-cu'), inspector_ussd: getNum('ov-plat-iu')
+  };
+  d.overall.yoy_change_march  = getNum('ov-yoy-change');
+  d.overall.ytd_pct_of_2025   = getNum('ov-ytd-pct');
+  d.overall.eoy_projection     = getNum('ov-eoy');
+  d.overall.mom_change         = getNum('ov-mom');
+  d.overall.mom_direction      = getRadio('ov-mom-dir');
+
+  // Property Rate static
+  d.property_rate.collections   = getNum('pr-collections');
+  d.property_rate.transactions  = getNum('pr-transactions');
+  d.property_rate.paid_count    = getNum('pr-paid-count');
+  d.property_rate.paid_value    = getNum('pr-paid-value');
+  d.property_rate.partial_count = getNum('pr-partial-count');
+  d.property_rate.partial_value = getNum('pr-partial-value');
+  d.property_rate.unpaid_count  = getNum('pr-unpaid-count');
+  d.property_rate.unpaid_value  = getNum('pr-unpaid-value');
+  d.property_rate.platform = {
+    inspector_portal: getNum('pr-plat-ip'), customer_portal: getNum('pr-plat-cp'),
+    customer_ussd: getNum('pr-plat-cu'), inspector_ussd: getNum('pr-plat-iu')
+  };
+  d.property_rate.mom_change              = getNum('pr-mom');
+  d.property_rate.mom_direction           = getRadio('pr-mom-dir');
+  d.property_rate.new_properties_value    = getNum('pr-np-value');
+  d.property_rate.new_properties_collected= getNum('pr-np-collected');
+  d.property_rate.past_payments_properties= getNum('pr-pp-props');
+  d.property_rate.yoy_change_march        = getNum('pr-yoy-change-march');
+  d.property_rate.yoy_change_qtd          = getNum('pr-yoy-change-qtd');
+  d.property_rate.ytd_pct_of_2025         = getNum('pr-ytd-pct');
+  d.property_rate.historical_pct_vs_2024  = getNum('pr-hist-pct');
+  d.property_rate.commentary              = getVal('pr-commentary');
+
+  // BOP static
+  d.bop.collections   = getNum('bop-collections');
+  d.bop.transactions  = getNum('bop-transactions');
+  d.bop.paid_count    = getNum('bop-paid-count');
+  d.bop.paid_value    = getNum('bop-paid-value');
+  d.bop.partial_count = getNum('bop-partial-count');
+  d.bop.partial_value = getNum('bop-partial-value');
+  d.bop.unpaid_count  = getNum('bop-unpaid-count');
+  d.bop.unpaid_value  = getNum('bop-unpaid-value');
+  d.bop.platform = {
+    inspector_portal: getNum('bop-plat-ip'), customer_portal: getNum('bop-plat-cp'),
+    customer_ussd: getNum('bop-plat-cu'), inspector_ussd: getNum('bop-plat-iu')
+  };
+  d.bop.mom_change              = getNum('bop-mom');
+  d.bop.mom_direction           = getRadio('bop-mom-dir');
+  d.bop.new_businesses_value    = getNum('bop-nb-value');
+  d.bop.new_businesses_collected= getNum('bop-nb-collected');
+  d.bop.past_payments_businesses= getNum('bop-pp-biz');
+  d.bop.compliance_banks        = getNum('bop-comp-banks');
+  d.bop.compliance_commercial   = getNum('bop-comp-commercial');
+  d.bop.compliance_warehouse    = getNum('bop-comp-warehouse');
+  d.bop.yoy_change_jan          = getNum('bop-yoy-jan-chg');
+  d.bop.yoy_change_march        = getNum('bop-yoy-mar-chg');
+  d.bop.ytd_pct_of_2025         = getNum('bop-ytd-pct');
+  d.bop.historical_pct_vs_2023  = getNum('bop-hist-pct');
+  d.bop.commentary              = getVal('bop-commentary');
+
+  // Biz types
+  d.bop.business_types = d.bop.business_types.map((t, i) => ({
+    name: t.name,
+    expected:  parseFloat(document.getElementById(`biz-exp-${i}`)?.value) || 0,
+    collected: parseFloat(document.getElementById(`biz-col-${i}`)?.value) || 0
+  }));
+
+  // Signage static
+  d.signage.collections   = getNum('cs-collections');
+  d.signage.transactions  = getNum('cs-transactions');
+  d.signage.paid_count    = getNum('cs-paid-count');
+  d.signage.paid_value    = getNum('cs-paid-value');
+  d.signage.partial_count = getNum('cs-partial-count');
+  d.signage.partial_value = getNum('cs-partial-value');
+  d.signage.unpaid_count  = getNum('cs-unpaid-count');
+  d.signage.unpaid_value  = getNum('cs-unpaid-value');
+  d.signage.platform = {
+    customer_portal: getNum('cs-plat-cp'), collectors_portal: getNum('cs-plat-col'),
+    customer_ussd: getNum('cs-plat-cu')
+  };
+  d.signage.mom_change        = getNum('cs-mom');
+    d.signage.mom_direction     = getRadio('cs-mom-dir');
+  d.signage.commentary        = getVal('cs-commentary');
+
+  // Inspector
+  d.inspector.total_collections         = getNum('ins-total');
+  d.inspector.total_transactions        = getNum('ins-transactions');
+  d.inspector.property_rate             = getNum('ins-pr');
+  d.inspector.property_rate_transactions= getNum('ins-pr-tx');
+  d.inspector.bop                       = getNum('ins-bop');
+  d.inspector.bop_transactions          = getNum('ins-bop-tx');
+  d.inspector.signage                   = getNum('ins-cs');
+  d.inspector.signage_transactions      = getNum('ins-cs-tx');
+  d.inspector.platform = {
+    inspector_portal: getNum('ins-plat-ip'), inspector_ussd: getNum('ins-plat-iu')
+  };
+
+  // Financial
+  const transfers = [];
+  document.querySelectorAll('.transfer-row').forEach(row => {
+    const id = row.id.replace('tr-row-','');
+    const date = getVal(`tr-date-${id}`);
+    const amount = parseFloat(getVal(`tr-amount-${id}`)) || 0;
+    if (date) transfers.push({ date, amount });
+  });
+  d.financial.transfers          = transfers;
+  d.financial.ama_share_pct      = getNum('fin-ama-pct');
+  d.financial.total_collections  = d.overview.total_collections;
+  d.financial.total_transfers    = transfers.reduce((s,t) => s + t.amount, 0);
+  d.financial.balance            = getNum('fin-balance');
+  d.financial.latest_sweep_date  = getVal('fin-sweep-date');
+  d.financial.latest_sweep_amount= getNum('fin-sweep-amount');
+
+  // ── Read callout fields ──
+  function readCallout(prefix) {
+    return {
+      value:       getVal(prefix+'-val'),
+      subtitle:    getVal(prefix+'-sub'),
+      commentary:  getVal(prefix+'-body')
+    };
+  }
+  d.callouts = {
+    overall_yoy:       [readCallout('p3-c0'),  readCallout('p3-c1')],
+    pr_new_properties:  readCallout('p5-np'),
+    pr_past_payments:   readCallout('p5-pp'),
+    pr_yoy:            [readCallout('p6-c0'),  readCallout('p6-c1')],
+    pr_historical:     [readCallout('p7-c0'),  readCallout('p7-c1')],
+    bop_new_businesses: readCallout('p9-nb'),
+    bop_past_payments:  readCallout('p9-pp'),
+    bop_compliance:      [readCallout('p10-c0'), readCallout('p10-c1'), readCallout('p10-c2')],
+    bop_yoy:           [readCallout('p11-c0'), readCallout('p11-c1')],
+    bop_historical:    [readCallout('p12-c0'), readCallout('p12-c1')],
+    cs_yoy:            [readCallout('p14-c0'), readCallout('p14-c1')],
+    overall_historical:[readCallout('p16-c0'), readCallout('p16-c1')]
+  };
+  // Inspector commentary
+  d.inspector.commentary = getVal('ins-commentary');
+
+  return d;
+}
+
+function readHistoricalForm() {
+  return {
+    property_rate: { 2021:getNum('hist-pr-2021'),2022:getNum('hist-pr-2022'),2023:getNum('hist-pr-2023'),2024:getNum('hist-pr-2024'),2025:getNum('hist-pr-2025') },
+    bop:           { 2021:getNum('hist-bop-2021'),2022:getNum('hist-bop-2022'),2023:getNum('hist-bop-2023'),2024:getNum('hist-bop-2024'),2025:getNum('hist-bop-2025') },
+    overall:       { 2021:getNum('hist-ov-2021'),2022:getNum('hist-ov-2022'),2023:getNum('hist-ov-2023'),2024:getNum('hist-ov-2024'),2025:getNum('hist-ov-2025') }
+  };
+}
+
+// ================================================================
+// SAVE
+// ================================================================
+function saveAll() {
+  currentData = readForm();
+  saveCurrentData(currentData);
+  saveHistoricalData(readHistoricalForm());
+  document.getElementById('current-month-chip').textContent =
+    `${currentData.meta.month} ${currentData.meta.year}`;
+  showToast('✓ Data saved successfully');
+}
+
+// ================================================================
+// VALIDATION
+// ================================================================
+function validate() {
+  const errors = [];
+  const required = [
+    ['meta-month','Month'], ['meta-year','Year'], ['meta-period','Period'],
+    ['ov-total','Total Collections'], ['ov-transactions','Total Transactions'],
+    ['pr-collections','Property Rate Collections'], ['pr-transactions','Property Rate Transactions'],
+    ['bop-collections','BOP Collections'], ['bop-transactions','BOP Transactions'],
+    ['cs-collections','Signage Collections'], ['cs-transactions','Signage Transactions'],
+    ['ins-total','Inspector Total'], ['ins-transactions','Inspector Transactions'],
+  ];
+  required.forEach(([id, lbl]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!el.value.trim()) { errors.push(`${lbl} is required`); el.classList.add('invalid'); }
+    else el.classList.remove('invalid');
+  });
+  const vbox = document.getElementById('validation-box');
+  const vlist = document.getElementById('validation-list');
+  if (errors.length) {
+    vlist.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+    vbox.classList.add('show');
+    vbox.scrollIntoView({ behavior:'smooth', block:'start' });
+    return false;
+  }
+  vbox.classList.remove('show');
+  return true;
+}
+
+// ================================================================
+// GENERATE REPORT
+// ================================================================
+async function generateReport() {
+  if (!validate()) return;
+  const data = readForm();
+  const hist = readHistoricalForm();
+  saveCurrentData(data);
+  saveHistoricalData(hist);
+
+  showToast('⏳ Building report...');
+
+  try {
+    // Read report.html as text
+    const resp = await fetch('report.html');
+    let html = await resp.text();
+
+    // Inject data directly into the HTML as a script tag
+    const injection = `<script>
+(function(){
+  const __INJECTED__ = ${JSON.stringify({ current: data, historical: hist })};
+  window.__AMA_INJECTED__ = __INJECTED__;
+  // Override loadCurrentData and loadHistoricalData to return injected data
+  window.__OVERRIDE_LOAD__ = true;
+})();
+<\/script>`;
+
+    // Insert just before the closing </head>
+    html = html.replace('</head>', injection + '</head>');
+
+    // Create blob URL and open
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+
+    showToast('✓ Report opened in new tab');
+  } catch(e) {
+    // Fallback if fetch fails (strict file:// security)
+    showToast('⚠ See instructions below', 5000);
+    alert(
+      'Your browser blocked direct file reading.\n\n' +
+      'QUICK FIX — run this one command in your terminal:\n\n' +
+      'Mac/Linux:\n  cd path/to/your/folder && python3 -m http.server 8080\n\n' +
+      'Windows:\n  cd path\\to\\your\\folder && python -m http.server 8080\n\n' +
+      'Then open: http://localhost:8080/index.html\n\n' +
+      'This only takes 5 seconds and fixes everything permanently.'
+    );
+  }
+}
+
+// ================================================================
+// IMPORT
+// ================================================================
+document.getElementById('import-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  importData(file, () => {
+    currentData = loadCurrentData();
+    currentMonth = currentData.meta.month;
+    const h = loadHistoricalData();
+    populateStaticFields(currentData, h);
+    rebuildAllMonthFields(currentData);
+    document.getElementById('current-month-chip').textContent =
+      `${currentData.meta.month} ${currentData.meta.year}`;
+    showToast('✓ Data imported successfully');
+    e.target.value = '';
+  });
+});
+
+// ================================================================
+// INIT
+// ================================================================
+window.addEventListener('DOMContentLoaded', () => {
+  currentData = loadCurrentData();
+  currentMonth = currentData.meta.month;
+  const h = loadHistoricalData();
+  populateStaticFields(currentData, h);
+  rebuildAllMonthFields(currentData);
+  document.getElementById('current-month-chip').textContent =
+    `${currentData.meta.month} ${currentData.meta.year}`;
+});
+</script>
+</body>
+</html>

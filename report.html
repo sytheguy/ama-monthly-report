@@ -1,0 +1,2909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="report-title">AMA Digitalisation Project – Performance Report</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script>
+// ================================================================
+// AMA REPORT SYSTEM — data.js v3
+// Full 12-month schema + callout editor fields
+// ================================================================
+
+const AMA_DATA_KEY = 'ama_report_current';
+const AMA_HIST_KEY = 'ama_report_historical';
+
+const MONTHS = [
+  'january','february','march','april','may','june',
+  'july','august','september','october','november','december'
+];
+const MONTH_LABELS = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December'
+];
+
+function monthIndex(name) { return MONTHS.indexOf((name||'').toLowerCase()); }
+function monthsUpTo(month) { const i=monthIndex(month); return i<0?MONTHS.slice(0,3):MONTHS.slice(0,i+1); }
+function blankYear() { const o={}; MONTHS.forEach(m=>o[m]=null); return o; }
+function defaultTrend(jan,feb,mar) {
+  return {january:jan,february:feb,march:mar,april:null,may:null,june:null,
+    july:null,august:null,september:null,october:null,november:null,december:null};
+}
+
+// ---- Callout block helper ----
+function callout(value, subtitle, commentary) { return {value,subtitle,commentary}; }
+
+// ----------------------------------------------------------------
+// DEFAULT DATA
+// ----------------------------------------------------------------
+const DEFAULT_DATA = {
+  meta: { month:'March', year:'2026', period:'1st January 2026 – 31st March 2026' },
+
+  overview: {
+    total_collections:9038111, total_transactions:4080,
+    platform:{inspector_portal:2248,customer_portal:930,customer_ussd:785,inspector_ussd:117},
+    monthly_trend:defaultTrend(3218940.62,2686993.19,3116817.06),
+    mom_change:15.99, mom_direction:'up'
+  },
+
+  property_rate: {
+    collections:4172219, transactions:1398,
+    paid_count:1003, paid_value:3553855,
+    partial_count:473, partial_value:3277138.80,
+    unpaid_count:25589, unpaid_value:102872921.46,
+    platform:{inspector_portal:930,customer_portal:250,customer_ussd:207,inspector_ussd:11},
+    monthly_trend:defaultTrend(1010301.27,968488.54,2187756.76),
+    mom_change:125.93, mom_direction:'up',
+    new_properties:defaultTrend(14,21,22),
+    past_payments:defaultTrend(7002,1977802,664907.77),
+    yoy_2025:defaultTrend(382853.18,704323.38,1303185.86),
+    commentary:'Property rate collections recorded a notable increase this month, driven by a few high-value payments received toward the end of the month.'
+  },
+
+  bop: {
+    collections:4729055, transactions:2630,
+    paid_count:2335, paid_value:4627955,
+    partial_count:254, partial_value:170016,
+    unpaid_count:8043, unpaid_value:10690196,
+    platform:{inspector_portal:1302,customer_portal:656,customer_ussd:566,inspector_ussd:106},
+    monthly_trend:defaultTrend(2209279.35,1691499.65,819228.30),
+    mom_change:51.56, mom_direction:'down',
+    new_businesses:defaultTrend(126,126,28),
+    past_payments:defaultTrend(8618,15971,900),
+    business_types:[
+      {name:'Commercial Houses / Departmental Stores',expected:2662549,collected:358472},
+      {name:'Un-bonded Warehouse',expected:2635607.25,collected:1182533.9},
+      {name:'Universal Banks',expected:1347236,collected:1204841},
+      {name:'Manufacturing / Processing Companies',expected:1177203,collected:546928},
+      {name:'Hardware (Distributor / Wholesaler)',expected:727824,collected:97950},
+      {name:'Electronic / Home Appliances / Shops',expected:473886,collected:47172},
+      {name:'Electrical Appliances',expected:471837,collected:38540},
+      {name:'Fabric Dealers – Sales',expected:416898,collected:42290},
+      {name:"Used Clothing Sales ('Second Hand')",expected:384095,collected:35115},
+      {name:'Cosmetic / Personal Care / Hair Products',expected:330311.9,collected:41044}
+    ],
+    compliance_banks:89.44, compliance_commercial:13.46, compliance_warehouse:44.87,
+    yoy_2025:defaultTrend(681619,1866377,650357.20),
+    yoy_2024:defaultTrend(23780,49340,137050),
+    commentary:'The staff strike in March had a clear negative impact on this revenue line, leading to a second consecutive month of declining collections.'
+  },
+
+  signage: {
+    collections:136837, transactions:51,
+    paid_count:43, paid_value:87239,
+    partial_count:7, partial_value:49762,
+    unpaid_count:2325, unpaid_value:4965927,
+    platform:{customer_portal:23,collectors_portal:16,customer_ussd:12},
+    monthly_trend:defaultTrend(0,27005,109832),
+    mom_change:306.71, mom_direction:'up',
+    self_service_pct:69, customer_led_pct:68.63,
+    yoy_2025:defaultTrend(3337,119897,32280),
+    yoy_change_march:240.27, yoy_direction:'down',
+    commentary:'Collection activity has picked up strongly on this revenue line, with March recording a substantial increase in collections. Self-service payments continue to dominate, accounting for 69% of total transactions.'
+  },
+
+  inspector: {
+    total_collections:6354740, total_transactions:2365,
+    property_rate:2987501, property_rate_transactions:941,
+    bop:3274305, bop_transactions:1408,
+    signage:92934, signage_transactions:16,
+    platform:{inspector_portal:2248,inspector_ussd:117},
+    monthly_trend:defaultTrend(1667400.80,2188186.99,2490795.95),
+    commentary:'Inspector Portal dominates field collections, accounting for 95% of all inspector-led transactions across all revenue lines.'
+  },
+
+  overall: {
+    yoy_2024:defaultTrend(23780,49340,137050),
+    yoy_2025:defaultTrend(1067809.08,2690596.98,1985823.06),
+    yoy_2026:defaultTrend(3218940.62,2685209.19,3116817.06),
+    mom_change:15.99, mom_direction:'up'
+  },
+
+  financial: {
+    transfers:[
+      {date:'12/03/2026',amount:2256962.15},
+      {date:'10/02/2026',amount:1588246.65},
+      {date:'19/01/2026',amount:1947542.90}
+    ],
+    ama_share_pct:70, total_collections:9038111,
+    total_transfers:5792751.70, balance:533926,
+    latest_sweep_date:'12/03/2026', latest_sweep_amount:2256962.15
+  },
+
+  // ── CALLOUT EDITOR BLOCKS ──
+  callouts: {
+    // Page 3 — Overall Revenue Comparison (2 cards)
+    overall_yoy: [
+      callout('+56.96%','March 2026 vs March 2025','Collections saw a bounce back in March heavily due to collections received for some property rate payments later in the month.'),
+      callout('+15.99%','February 2026 vs March 2026','A strike action during the month caused a slowdown in field operations which affected collections for Business Operating Permit. This growth is carried entirely by Property Rate collections done in the period.')
+    ],
+    // Page 5 — PR New Properties (1 card)
+    pr_new_properties: callout('22 ▲','New properties added in March','Identified and added through enforcement activities and field visits by the operations team. Revenue base expanded by GHS 245,435.53, of which GHS 12,397.46 has already been collected.'),
+    // Page 5 — PR Past Payments (1 card)
+    pr_past_payments: callout('GHS 664,907.77','Past payments applied in March','Applied on 42 different properties. Payments made by property owners outside the system confirmed by the assembly with proof of receipts, applied to outstanding bills.'),
+    // Page 6 — PR YoY (2 cards)
+    pr_yoy: [
+      callout('+74.29%','January – March 2026 vs January – March 2025','After three months of collections over the same period, Property Rate collections shows a steady improvement of compliance levels for the revenue line.'),
+      callout('+67.87%','March 2026 vs March 2025','This marks a strong start for Property Rate, with compliance levels steadily improving over the period. The increase in collections shows ratepayers adherence to payment requirements.')
+    ],
+    // Page 7 — PR Historical (2 cards)
+    pr_historical: [
+      callout('65.65%','Achieved in three months: 2024 vs 2026','Reaching this level within just three months highlights a clear shift in performance. It suggests that baseline collections have improved significantly.'),
+      callout('25.34%','2026 YTD of 2025 total','In just three months, that\'s a solid pace for this revenue line. If collections stay consistent or follow the usual peak pattern later in the year, we are on track for a strong year.')
+    ],
+    // Page 9 — BOP New Businesses (1 card)
+    bop_new_businesses: callout('28 ▼','Businesses added in March','These additions increased the projected revenue by GHS 26,186.10, out of which GHS 10,117.05 has already been collected.'),
+    // Page 9 — BOP Past Payments (1 card)
+    bop_past_payments: callout('GHS 900','Past payments applied in March','This payment was added on 1 business. Payments made outside the system confirmed by the assembly with proof of receipts, applied to outstanding bills.'),
+    // Page 10 — BOP Business Type Compliance (3 cards)
+    bop_compliance: [
+      callout('89.44%','Universal Banks compliance rate','GHS 1.2M collected vs GHS 1.35M expected.'),
+      callout('13.46%','Commercial Houses compliance rate','This business type carries the highest expected revenue but has only seen a fraction of the revenue realized.'),
+      callout('44.87%','Un-bonded Warehouses progress','A strong targeted enforcement on this revenue line will help increase payment conversion and unlock outstanding high value revenue.')
+    ],
+    // Page 11 — BOP YoY (2 cards)
+    bop_yoy: [
+      callout('+224.04%','January 2026 vs January 2025','Marking a very strong start to the year, these payments were mostly driven by big ticket payments made from Universal Banks. This business type usually makes payments early in the year.'),
+      callout('+25.96%','March 2026 vs March 2025','Collections appear lower, but that\'s mainly because large payments from business types like universal banks were received earlier in the year. Also, the strike action has affected collections leading to the heavy decline.')
+    ],
+    // Page 12 — BOP Historical (2 cards)
+    bop_historical: [
+      callout('+31.14%','2026 YTD vs all of 2023','Just three months in, collections are higher than the total collected for 2023 and 2024.'),
+      callout('55.36%','of 2025 full year achieved','This is heavily influenced by collections made from the Universal Banks business type earlier on in the year.')
+    ],
+    // Page 14 — Signage YoY (2 cards)
+    cs_yoy: [
+      callout('240.27%','March 2026 vs March 2025','After a slow start to the year due to delayed bill generation, Commercial Signage saw a strong turnaround in March, driven by 29 new collections.'),
+      callout('68.63%','Transactions were Customer-led','High customer-led payments indicates a clear willingness to pay even without direct follow-up from inspectors.')
+    ],
+    // Page 16 — Overall Historical (2 cards)
+    overall_historical: [
+      callout('35.43%','2025 full year vs 2026 YTD','Benchmarking against our highest-record year, 2025, we\'ve already achieved a good percentage of that total within just the first three months.'),
+      callout('GHS 48M BY EOY','End of year projection','March collections bounced back strongly by 15.99%. If that momentum holds at 5% growth each month, collections will rise from GHS 3.12M in March to GHS 4.87M by December, ending the year at an estimated GHS 48M.')
+    ]
+  }
+};
+
+// ----------------------------------------------------------------
+// HISTORICAL
+// ----------------------------------------------------------------
+const DEFAULT_HISTORICAL = {
+  property_rate:{2021:3938043.80,2022:3337104.90,2023:1693490.20,2024:2519354.00,2025:16466845.00},
+  bop:          {2021:4046131.20,2022:5163907.00,2023:3606112.50,2024:3501568.00,2025:8542882.00},
+  overall:      {2021:7984175.00,2022:8501012.00,2023:5299603.00,2024:6020922.00,2025:25511774.00}
+};
+
+// ----------------------------------------------------------------
+// MIGRATE
+// ----------------------------------------------------------------
+function ensureFullYear(obj) {
+  if (!obj||typeof obj!=='object') return blankYear();
+  const out=blankYear();
+  MONTHS.forEach(m=>{if(obj[m]!==undefined)out[m]=obj[m];});
+  return out;
+}
+
+function ensureCallout(c) {
+  if (!c||typeof c!=='object') return {value:'',subtitle:'',commentary:''};
+  return {value:c.value||'',subtitle:c.subtitle||'',commentary:c.commentary||''};
+}
+
+function ensureCalloutArray(arr, len) {
+  if (!Array.isArray(arr)) arr=[];
+  while(arr.length<len) arr.push({value:'',subtitle:'',commentary:''});
+  return arr.map(ensureCallout);
+}
+
+function migrateData(d) {
+  if (!d) return JSON.parse(JSON.stringify(DEFAULT_DATA));
+  try {
+    if(d.overview)      d.overview.monthly_trend      =ensureFullYear(d.overview.monthly_trend);
+    if(d.property_rate){
+      d.property_rate.monthly_trend  =ensureFullYear(d.property_rate.monthly_trend);
+      d.property_rate.new_properties =ensureFullYear(d.property_rate.new_properties);
+      d.property_rate.past_payments  =ensureFullYear(d.property_rate.past_payments);
+      d.property_rate.yoy_2025       =ensureFullYear(d.property_rate.yoy_2025);
+    }
+    if(d.bop){
+      d.bop.monthly_trend  =ensureFullYear(d.bop.monthly_trend);
+      d.bop.new_businesses =ensureFullYear(d.bop.new_businesses);
+      d.bop.past_payments  =ensureFullYear(d.bop.past_payments);
+      d.bop.yoy_2025       =ensureFullYear(d.bop.yoy_2025);
+      d.bop.yoy_2024       =ensureFullYear(d.bop.yoy_2024);
+    }
+    if(d.signage){
+      d.signage.monthly_trend=ensureFullYear(d.signage.monthly_trend);
+      d.signage.yoy_2025     =ensureFullYear(d.signage.yoy_2025);
+    }
+    if(d.inspector) d.inspector.monthly_trend=ensureFullYear(d.inspector.monthly_trend);
+    if(d.overall){
+      d.overall.yoy_2024=ensureFullYear(d.overall.yoy_2024);
+      d.overall.yoy_2025=ensureFullYear(d.overall.yoy_2025);
+      d.overall.yoy_2026=ensureFullYear(d.overall.yoy_2026);
+    }
+    // Migrate callouts — ensure structure exists
+    if(!d.callouts) d.callouts=JSON.parse(JSON.stringify(DEFAULT_DATA.callouts));
+    else {
+      const def=DEFAULT_DATA.callouts;
+      d.callouts.overall_yoy      =ensureCalloutArray(d.callouts.overall_yoy,2);
+      d.callouts.pr_new_properties=ensureCallout(d.callouts.pr_new_properties);
+      d.callouts.pr_past_payments =ensureCallout(d.callouts.pr_past_payments);
+      d.callouts.pr_yoy           =ensureCalloutArray(d.callouts.pr_yoy,2);
+      d.callouts.pr_historical    =ensureCalloutArray(d.callouts.pr_historical,2);
+      d.callouts.bop_new_businesses=ensureCallout(d.callouts.bop_new_businesses);
+      d.callouts.bop_past_payments =ensureCallout(d.callouts.bop_past_payments);
+      d.callouts.bop_compliance    =ensureCalloutArray(d.callouts.bop_compliance,3);
+      d.callouts.bop_yoy          =ensureCalloutArray(d.callouts.bop_yoy,2);
+      d.callouts.bop_historical   =ensureCalloutArray(d.callouts.bop_historical,2);
+      d.callouts.cs_yoy           =ensureCalloutArray(d.callouts.cs_yoy,2);
+      d.callouts.overall_historical=ensureCalloutArray(d.callouts.overall_historical,2);
+    }
+    // Migrate inspector commentary
+    if(!d.inspector.commentary) d.inspector.commentary=DEFAULT_DATA.inspector.commentary;
+  } catch(e){console.error('migrate error',e);}
+  return d;
+}
+
+// ----------------------------------------------------------------
+// STORAGE
+// ----------------------------------------------------------------
+function saveCurrentData(data){localStorage.setItem(AMA_DATA_KEY,JSON.stringify(data));}
+function loadCurrentData(){
+  const s=localStorage.getItem(AMA_DATA_KEY);
+  if(s){try{return migrateData(JSON.parse(s));}catch(e){}}
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+function saveHistoricalData(data){localStorage.setItem(AMA_HIST_KEY,JSON.stringify(data));}
+function loadHistoricalData(){
+  const s=localStorage.getItem(AMA_HIST_KEY);
+  if(s){try{return JSON.parse(s);}catch(e){}}
+  return JSON.parse(JSON.stringify(DEFAULT_HISTORICAL));
+}
+
+function exportData(){
+  const bundle={current:loadCurrentData(),historical:loadHistoricalData(),exported_at:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const d=loadCurrentData();
+  a.download=`ama-report-${d.meta.month}-${d.meta.year}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(file,onSuccess){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const bundle=JSON.parse(e.target.result);
+      if(bundle.current)    saveCurrentData(migrateData(bundle.current));
+      if(bundle.historical) saveHistoricalData(bundle.historical);
+      onSuccess();
+    }catch(err){alert('Invalid file. Please import a valid AMA report JSON file.');}
+  };
+  reader.readAsText(file);
+}
+
+function fmt(n){
+  if(n===null||n===undefined||n==='')return '';
+  return Number(n).toLocaleString('en-GH',{minimumFractionDigits:0,maximumFractionDigits:2});
+}
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+/* ================================================================
+   DESIGN SYSTEM — AMA REPORT v2
+   World-class refinement. Green & white. Landscape A4.
+   ================================================================ */
+:root {
+  /* Core Palette */
+  --g900: #0f2d1e;
+  --g800: #1a3d2a;
+  --g700: #1e4d35;
+  --g600: #256040;
+  --g500: #2e7d4f;
+  --g400: #3a9e63;
+  --g300: #5cb87a;
+  --g200: #a8d9b8;
+  --g100: #d4eedd;
+  --g050: #eef7f1;
+  --g010: #f5fbf7;
+
+  --gold:      #c8a84b;
+  --gold-mid:  #d4b862;
+  --gold-light:#e8d08a;
+  --gold-pale: #faf4e1;
+  --gold-deep: #a07c28;
+
+  --red:       #b83232;
+  --red-light: #f7e8e8;
+  --blue:      #2471a3;
+  --blue-light:#e8f3fb;
+
+  --white:     #ffffff;
+  --offwhite:  #fafaf8;
+  --page-bg:   #fafaf8;
+  --border:    #e2ebe6;
+  --border-mid:#c8d8ce;
+
+  --text-1:    #0f2d1e;
+  --text-2:    #2d4a38;
+  --text-3:    #5a7a66;
+  --text-4:    #8aaa96;
+  --text-inv:  #ffffff;
+
+  /* Typography */
+  --font:      'DM Sans', 'Calibri', system-ui, sans-serif;
+  --font-serif:'DM Serif Display', Georgia, serif;
+
+  /* Spacing */
+  --s1: 4px;  --s2: 8px;   --s3: 12px;  --s4: 16px;
+  --s5: 20px; --s6: 24px;  --s8: 32px;  --s10: 40px;
+
+  /* Radii */
+  --r1: 3px;  --r2: 6px;  --r3: 10px;  --r4: 16px;
+}
+
+/* ================================================================
+   RESET
+   ================================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  font-size: 17px;
+  color: var(--text-1);
+  background: #c8cec9;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  line-height: 1.45;
+}
+
+/* ================================================================
+   PAGE SYSTEM — PowerPoint Widescreen 16:9
+   33.87cm × 19.05cm = 960px × 540px equivalent
+   ================================================================ */
+.page {
+  width: 338.7mm;
+  height: 190.5mm;
+  background: var(--page-bg);
+  margin: 0 auto 12px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* ================================================================
+   PAGE HEADER
+   ================================================================ */
+.ph {
+  background: linear-gradient(105deg, var(--g800) 0%, var(--g700) 55%, var(--g600) 100%);
+  padding: 14px 32px 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle dot-grid pattern on header */
+.ph::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+}
+
+.ph-left { position: relative; z-index: 1; }
+
+.ph h1 {
+  font-family: var(--font);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+
+.ph-sub {
+  font-size: 15.5px;
+  color: rgba(255,255,255,0.58);
+  font-weight: 400;
+  margin-top: 3px;
+  letter-spacing: 0.1px;
+}
+
+.ph-period {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gold-light);
+  letter-spacing: 0.2px;
+  position: relative;
+  z-index: 1;
+  margin-top: 2px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Gold accent rule */
+.ph-rule {
+  height: 2.5px;
+  background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 40%, transparent 100%);
+  flex-shrink: 0;
+}
+
+/* ================================================================
+   PAGE CONTENT
+   ================================================================ */
+.pc {
+  flex: 1;
+  padding: 14px 28px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ================================================================
+   PAGE FOOTER
+   ================================================================ */
+.pf {
+  background: var(--g800);
+  padding: 0 28px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.pf::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 30%, transparent 100%);
+}
+
+.pf-title {
+  font-size: 14px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+
+.pf-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-light);
+  background: rgba(255,255,255,0.08);
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+/* ================================================================
+   KPI BLOCKS
+   ================================================================ */
+.kpi-row {
+  display: grid;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.kpi-4 { grid-template-columns: repeat(4, 1fr); }
+.kpi-3 { grid-template-columns: repeat(3, 1fr); }
+
+.kpi {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 16px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top color bar */
+.kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--r2) var(--r2) 0 0;
+}
+
+.kpi-dark::before  { background: linear-gradient(90deg, var(--g700), var(--g500)); }
+.kpi-green::before { background: linear-gradient(90deg, var(--g500), var(--g300)); }
+.kpi-gold::before  { background: linear-gradient(90deg, var(--gold-deep), var(--gold-mid)); }
+.kpi-red::before   { background: linear-gradient(90deg, var(--red), #d45c5c); }
+.kpi-blue::before  { background: linear-gradient(90deg, var(--blue), #4a9fd4); }
+
+/* Subtle tinted bg */
+.kpi-dark  { background: linear-gradient(135deg, var(--white) 60%, var(--g010)); }
+.kpi-green { background: linear-gradient(135deg, var(--white) 55%, var(--g050)); }
+.kpi-gold  { background: linear-gradient(135deg, var(--white) 60%, var(--gold-pale)); }
+.kpi-red   { background: linear-gradient(135deg, var(--white) 60%, var(--red-light)); }
+.kpi-blue  { background: linear-gradient(135deg, var(--white) 60%, var(--blue-light)); }
+
+.kpi-lbl {
+  font-size: 14.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-3);
+}
+
+.kpi-val {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1px;
+  color: var(--g700);
+}
+.kpi-gold  .kpi-val { color: var(--gold-deep); }
+.kpi-red   .kpi-val { color: var(--red); }
+.kpi-blue  .kpi-val { color: var(--blue); }
+
+.kpi-val-lg { font-size: 32px; }
+.kpi-val-sm { font-size: 26px; }
+
+.kpi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 20px;
+  width: fit-content;
+  margin-top: 1px;
+}
+.kpi-badge-g { background: var(--g050); color: var(--g600); }
+.kpi-badge-gold { background: var(--gold-pale); color: var(--gold-deep); }
+.kpi-badge-red { background: var(--red-light); color: var(--red); }
+.kpi-badge-blue { background: var(--blue-light); color: var(--blue); }
+
+/* ================================================================
+   VERTICAL STACK HELPER
+   ================================================================ */
+.vstack { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+
+/* ================================================================
+   GRID LAYOUTS
+   ================================================================ */
+.grid { display: grid; gap: 12px; flex: 1; min-height: 0; overflow: hidden; }
+.g-6040 { grid-template-columns: 6fr 4fr; }
+.g-5050 { grid-template-columns: 1fr 1fr; }
+.g-4060 { grid-template-columns: 4fr 6fr; }
+.g-3565 { grid-template-columns: 3.5fr 6.5fr; }
+.panel {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.panel-hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ================================================================
+   PLATFORM BARS
+   ================================================================ */
+.plat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex: 1;
+  justify-content: space-evenly;
+}
+
+.plat-item { display: flex; flex-direction: column; gap: 4px; }
+
+.plat-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plat-lbl {
+  font-size: 15px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.plat-val {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--g700);
+}
+
+.plat-track {
+  height: 20px;
+  background: var(--g050);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.plat-fill {
+  height: 100%;
+  border-radius: 20px;
+}
+.pf-g    { background: linear-gradient(90deg, var(--g700), var(--g400)); }
+.pf-gold { background: linear-gradient(90deg, var(--gold-deep), var(--gold-mid)); }
+.pf-gl   { background: linear-gradient(90deg, var(--g400), var(--g300)); }
+.pf-blue { background: linear-gradient(90deg, var(--blue), #5aade0); }
+
+/* ================================================================
+   CHART CONTAINERS
+   ================================================================ */
+.chart-box {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.chart-box canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ================================================================
+   STAT CALLOUTS
+   ================================================================ */
+.stat {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Accent strip left */
+.stat::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: var(--r2) 0 0 var(--r2);
+}
+.stat-up::before   { background: linear-gradient(180deg, var(--g500), var(--g300)); }
+.stat-down::before { background: linear-gradient(180deg, var(--red), #d45c5c); }
+.stat-amber::before { background: linear-gradient(180deg, var(--gold-deep), var(--gold-mid)); }
+
+.stat-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stat-num {
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.stat-num-up    { color: var(--g600); }
+.stat-num-down  { color: var(--red); }
+.stat-num-amber { color: var(--gold-deep); }
+
+.arrow-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.ab-up   { background: var(--g050); color: var(--g600); }
+.ab-down { background: var(--red-light); color: var(--red); }
+.ab-amber { background: var(--gold-pale); color: var(--gold-deep); }
+
+.stat-lbl {
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--text-1);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.2;
+}
+
+.stat-body {
+  font-size: 20px;
+  color: var(--text-3);
+  line-height: 1.75;
+  flex: 1;
+}
+
+/* ================================================================
+   COMMENTARY BLOCK
+   ================================================================ */
+.commentary {
+  background: var(--g010);
+  border-left: 2.5px solid var(--g400);
+  border-radius: 0 var(--r1) var(--r1) 0;
+  padding: 7px 10px;
+  font-size: 14.5px;
+  color: var(--text-2);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* ================================================================
+   MOM BADGE (inline chart overlay)
+   ================================================================ */
+.mom-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.mom-val {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+}
+.mom-up   { color: var(--g500); }
+.mom-down { color: var(--red); }
+.mom-tiny { font-size: 15.5px; color: var(--text-4); font-weight: 500; }
+
+/* ================================================================
+   TABLES
+   ================================================================ */
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15.5px;
+  border-radius: var(--r2);
+  overflow: hidden;
+}
+
+.tbl thead tr {
+  background: linear-gradient(90deg, var(--g800), var(--g600));
+}
+
+.tbl thead th {
+  color: rgba(255,255,255,0.9);
+  font-weight: 600;
+  font-size: 14.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 8px 12px;
+  text-align: left;
+}
+.tbl thead th:last-child { text-align: right; }
+
+.tbl tbody tr:nth-child(even) { background: var(--g010); }
+.tbl tbody tr:nth-child(odd)  { background: var(--white); }
+
+.tbl tbody td {
+  padding: 7px 12px;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border);
+}
+.tbl tbody td:last-child { text-align: right; font-weight: 600; color: var(--text-1); }
+
+.tbl tfoot tr.total td {
+  background: var(--g700);
+  color: var(--white);
+  font-weight: 700;
+  padding: 8px 12px;
+  font-size: 16px;
+}
+.tbl tfoot tr.total td:last-child { color: var(--gold-light); }
+
+.tbl tfoot tr.subtotal td {
+  background: var(--gold-pale);
+  color: var(--gold-deep);
+  font-weight: 700;
+  padding: 7px 12px;
+  border-top: 2px solid var(--gold);
+}
+
+/* ================================================================
+   BIZ TYPE BARS (Page 10)
+   ================================================================ */
+.biz-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4.5px;
+}
+.biz-lbl {
+  font-size: 14px;
+  color: var(--text-2);
+  width: 130px;
+  flex-shrink: 0;
+  text-align: right;
+  line-height: 1.3;
+  font-weight: 500;
+}
+.biz-track {
+  flex: 1;
+  height: 12px;
+  border-radius: 20px;
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+}
+.biz-exp {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  border-radius: 20px;
+  background: linear-gradient(90deg, var(--g700), var(--g500));
+  opacity: 0.7;
+}
+.biz-col {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  border-radius: 20px;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-mid));
+}
+.biz-val {
+  font-size: 15.5px;
+  font-weight: 700;
+  width: 48px;
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+
+/* ================================================================
+   SWEEP HIGHLIGHT BOX
+   ================================================================ */
+.sweep-box {
+  background: linear-gradient(105deg, var(--g900) 0%, var(--g700) 100%);
+  border-radius: var(--r2);
+  padding: 14px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.sweep-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+.sweep-tag {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+  position: relative;
+}
+.sweep-val {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--gold-light);
+  letter-spacing: -0.5px;
+  line-height: 1;
+  position: relative;
+}
+.sweep-sub {
+  font-size: 14.5px;
+  color: rgba(255,255,255,0.45);
+  margin-top: 6px;
+  position: relative;
+}
+
+/* ================================================================
+   COVER PAGE
+   ================================================================ */
+.cover {
+  background: linear-gradient(135deg, var(--g900) 0%, var(--g800) 50%, var(--g700) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Geometric pattern */
+.cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Large circle accent top right */
+.cover::after {
+  content: '';
+  position: absolute;
+  right: -80px;
+  top: -80px;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  border: 60px solid rgba(255,255,255,0.03);
+}
+
+.cover-inner {
+  position: relative;
+  z-index: 2;
+  padding: 48px 56px 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cover-eyebrow {
+  font-size: 23px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--gold);
+  margin-bottom: 20px;
+}
+
+.cover-rule {
+  width: 48px;
+  height: 2px;
+  background: var(--gold);
+  margin-bottom: 16px;
+}
+
+.cover-title {
+  font-family: var(--font);
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.0;
+  letter-spacing: -1.5px;
+  margin-bottom: 6px;
+}
+
+.cover-title-accent {
+  color: var(--gold-light);
+}
+
+.cover-subtitle {
+  font-size: 23px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 300;
+  margin-bottom: 28px;
+  letter-spacing: 0.2px;
+}
+
+.cover-month {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--gold-light);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.cover-footer {
+  position: relative;
+  z-index: 2;
+  background: rgba(0,0,0,0.25);
+  padding: 14px 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.cover-period {
+  font-size: 19px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.3px;
+}
+
+.cover-tag {
+  font-size: 18.5px;
+  font-weight: 600;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* ================================================================
+   SECTION DIVIDER
+   ================================================================ */
+.divider {
+  height: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ================================================================
+   VERTICAL STACK HELPER
+   ================================================================ */
+.vstack { display: flex; flex-direction: column; gap: 10px; }
+
+/* ================================================================
+   PRINT RULES
+   ================================================================ */
+@media print {
+  /* ── Hide all UI chrome ── */
+  .generate-fab,
+  .download-btn,
+  button[onclick],
+  #pdf-download-btn { display: none !important; }
+
+  /* ── Force colour printing ── */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* ── Page size: landscape widescreen ── */
+  @page {
+    size: 338.7mm 190.5mm landscape;
+    margin: 0 !important;
+  }
+
+  html {
+    width: 338.7mm;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body {
+    width: 338.7mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  /* ── Each page fills exactly one printed sheet ── */
+  .page {
+    width: 338.7mm !important;
+    height: 190.5mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-shadow: none !important;
+    page-break-before: always !important;
+    break-before: page !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    position: relative !important;
+  }
+
+  /* First page: no break before */
+  .page:first-of-type {
+    page-break-before: auto !important;
+    break-before: auto !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     PAGE 1 — COVER
+     ============================================================ -->
+<div class="page cover">
+  <div class="cover-inner">
+    <div class="cover-eyebrow">Accra Metropolitan Assembly</div>
+    <div class="cover-rule"></div>
+    <div class="cover-title">
+      AMA Digitalisation<br>
+      <span class="cover-title-accent">Project</span>
+    </div>
+    <div class="cover-subtitle">End of Month Performance Report</div>
+    <div class="cover-month" id="cv-month">March 2026</div>
+  </div>
+
+  <!-- Right side decorative block -->
+  <div style="position:absolute;right:0;top:0;bottom:0;width:220px;z-index:1;
+    background:linear-gradient(180deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.01) 100%);
+    border-left:1px solid rgba(255,255,255,0.06);
+    display:flex;flex-direction:column;justify-content:center;align-items:center;gap:24px;
+    padding:32px 24px;">
+    <div style="text-align:center;">
+      <div style="font-size:24px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Total Collections</div>
+      <div style="font-size:34px;font-weight:700;color:white;letter-spacing:-0.5px;" id="cv-total">GHS 9.04M</div>
+    </div>
+    <div style="width:40px;height:1px;background:rgba(255,255,255,0.1);"></div>
+    <div style="text-align:center;">
+      <div style="font-size:24px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">YoY Growth</div>
+      <div style="font-size:34px;font-weight:700;color:var(--gold-light);letter-spacing:-0.5px;" id="cv-yoy">+56.96%</div>
+      <div style="font-size:24px;color:rgba(255,255,255,0.35);margin-top:3px;" id="cv-yoy-label">vs March 2025</div>
+    </div>
+    <div style="width:40px;height:1px;background:rgba(255,255,255,0.1);"></div>
+    <div style="text-align:center;">
+      <div style="font-size:24px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Transactions</div>
+      <div style="font-size:34px;font-weight:700;color:white;letter-spacing:-0.5px;" id="cv-tx">4,080</div>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- ============================================================
+     PAGE 2 — LOCAL ASSEMBLY OVERVIEW
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>LOCAL ASSEMBLY OVERVIEW</h1>
+      <div class="ph-sub">Collections breakdown across Property Rates, Business Operating Permit (BOP), and Commercial Signage</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="kpi-row kpi-4">
+      <div class="kpi kpi-dark">
+        <div class="kpi-lbl">Total Collections</div>
+        <div class="kpi-val" id="ov-total">GHS 9,038,111</div>
+        <div class="kpi-badge kpi-badge-g"><span id="ov-tx">4,080 transactions</span></div>
+      </div>
+      <div class="kpi kpi-green">
+        <div class="kpi-lbl">Property Rate</div>
+        <div class="kpi-val" id="ov-pr">GHS 4,172,219</div>
+        <div class="kpi-badge kpi-badge-g"><span id="ov-pr-tx">1,398 transactions</span></div>
+      </div>
+      <div class="kpi kpi-gold">
+        <div class="kpi-lbl">Business Operating Permit</div>
+        <div class="kpi-val" style="color:var(--gold-deep);" id="ov-bop">GHS 4,729,055</div>
+        <div class="kpi-badge kpi-badge-gold"><span id="ov-bop-tx">2,016 transactions</span></div>
+      </div>
+      <div class="kpi kpi-blue">
+        <div class="kpi-lbl">Commercial Signage</div>
+        <div class="kpi-val" style="color:var(--blue);" id="ov-cs">GHS 136,837</div>
+        <div class="kpi-badge kpi-badge-blue"><span id="ov-cs-tx">22 transactions</span></div>
+      </div>
+    </div>
+
+    <div class="grid g-4060">
+      <div class="panel">
+        <div class="panel-title">Platform</div>
+        <div class="plat-list">
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Inspector Portal</span><span class="plat-val" id="ov-plat-ip">2,248</span></div>
+            <div class="plat-track"><div class="plat-fill pf-g" style="width:100%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Customer Portal</span><span class="plat-val" id="ov-plat-cp">930</span></div>
+            <div class="plat-track"><div class="plat-fill pf-gold" style="width:41%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Customer USSD</span><span class="plat-val" id="ov-plat-cu">785</span></div>
+            <div class="plat-track"><div class="plat-fill pf-gl" style="width:35%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Inspector USSD</span><span class="plat-val" id="ov-plat-iu">117</span></div>
+            <div class="plat-track"><div class="plat-fill pf-blue" style="width:5%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hd">
+          <div class="panel-title">Monthly Transactions (GHS)</div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div class="mom-wrap">
+              <div class="mom-val mom-up" id="ov-mom">▲ 15.99%</div>
+              <div class="mom-tiny" id="ov-mom-label">MoM Feb → Mar</div>
+            </div>
+          </div>
+        </div>
+        <div class="commentary">Collections increased in March, driven mainly by large property rate payments received toward the end of the month.</div>
+        <div class="chart-box">
+          <canvas id="c-overview-trend"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">2</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 3 — OVERALL REVENUE COMPARISON
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>OVERALL REVENUE COMPARISON</h1>
+      <div class="ph-sub">Grand total of collections — January, February and March across 2024 · 2025 · 2026</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="grid g-6040">
+      <div class="panel">
+        <div class="panel-title">Collections Comparison — 2024 / 2025 / 2026</div>
+        <div class="chart-box">
+          <canvas id="c-overall-yoy"></canvas>
+        </div>
+      </div>
+      <div class="vstack">
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p3-c0-val"></div>
+          <div class="stat-lbl" id="p3-c0-sub"></div>
+          <div class="stat-body" id="p3-c0-body"></div>
+        </div>
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p3-c1-val"></div>
+          <div class="stat-lbl" id="p3-c1-sub"></div>
+          <div class="stat-body" id="p3-c1-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">3</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 4 — PROPERTY RATE
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>PROPERTY RATE</h1>
+      <div class="ph-sub">Collections breakdown, property status, platform usage and month-on-month performance</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="kpi-row kpi-4">
+      <div class="kpi kpi-dark">
+        <div class="kpi-lbl">Property Rate Collections</div>
+        <div class="kpi-val" id="pr-total">GHS 4,172,219</div>
+        <div class="kpi-badge kpi-badge-g"><span id="pr-tx">1,398 transactions</div>
+      </div>
+      <div class="kpi kpi-green">
+        <div class="kpi-lbl">Paid Properties</div>
+        <div class="kpi-val kpi-val-lg" id="pr-paid-count">1,003</div>
+        <div class="kpi-badge kpi-badge-g" id="pr-paid-val">GHS 3,553,855</div>
+      </div>
+      <div class="kpi kpi-gold">
+        <div class="kpi-lbl">Partially Paid</div>
+        <div class="kpi-val kpi-val-lg" style="color:var(--gold-deep);" id="pr-partial-count">473</div>
+        <div class="kpi-badge kpi-badge-gold" id="pr-partial-val">GHS 3,277,138.80</div>
+      </div>
+      <div class="kpi kpi-red">
+        <div class="kpi-lbl">Unpaid Properties</div>
+        <div class="kpi-val kpi-val-lg" style="color:var(--red);" id="pr-unpaid-count">25,589</div>
+        <div class="kpi-badge kpi-badge-red" id="pr-unpaid-val">GHS 102,872,921.46</div>
+      </div>
+    </div>
+
+    <div class="grid g-4060">
+      <div class="panel">
+        <div class="panel-title">Platform</div>
+        <div class="plat-list">
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Inspector Portal</span><span class="plat-val" id="pr-plat-ip">930</span></div>
+            <div class="plat-track"><div class="plat-fill pf-g" style="width:100%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Customer Portal</span><span class="plat-val" id="pr-plat-cp">250</span></div>
+            <div class="plat-track"><div class="plat-fill pf-gold" style="width:27%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Customer USSD</span><span class="plat-val" id="pr-plat-cu">207</span></div>
+            <div class="plat-track"><div class="plat-fill pf-gl" style="width:22%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Inspector USSD</span><span class="plat-val" id="pr-plat-iu">11</span></div>
+            <div class="plat-track"><div class="plat-fill pf-blue" style="width:2%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hd">
+          <div class="panel-title">Monthly Transactions (GHS)</div>
+          <div class="mom-wrap">
+            <div class="mom-val mom-up" id="pr-mom">▲ 125.93%</div>
+            <div class="mom-tiny" id="pr-mom-label">MoM Feb → Mar</div>
+          </div>
+        </div>
+        <div class="commentary" id="pr-commentary">Property rate collections recorded a notable increase this month, driven by a few high-value payments.</div>
+        <div class="chart-box">
+          <canvas id="c-pr-trend"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">4</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 5 — PROPERTY RATE: New Properties & Past Payments
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>PROPERTY RATE</h1>
+      <div class="ph-sub">New Properties Identified and Past Payment Additions</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="grid g-6040" style="min-height:0; overflow:hidden;">
+      <div class="vstack" style="min-height:0; overflow:hidden;">
+        <div class="panel" style="flex:1; min-height:0;">
+          <div class="panel-title">New Properties Added</div>
+          <div class="chart-box">
+            <canvas id="c-pr-newprops"></canvas>
+          </div>
+        </div>
+        <div class="panel" style="flex:1; min-height:0;">
+          <div class="panel-title">Past Payments Applied (GHS)</div>
+          <div class="chart-box">
+            <canvas id="c-pr-pastpay"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="vstack" style="min-height:0; overflow:hidden;">
+        <div class="stat stat-up" style="flex:1; min-height:0; overflow:hidden;">
+          <div class="stat-num stat-num-up" id="p5-np-val"></div>
+          <div class="stat-lbl" id="p5-np-sub"></div>
+          <div class="stat-body" id="p5-np-body"></div>
+        </div>
+        <div class="stat stat-up" style="flex:1; min-height:0; overflow:hidden;">
+          <div class="stat-num stat-num-up" id="p5-pp-val"></div>
+          <div class="stat-lbl" id="p5-pp-sub"></div>
+          <div class="stat-body" id="p5-pp-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">5</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 6 — PROPERTY RATE REVENUE COMPARISON (YoY)
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>PROPERTY RATE REVENUE COMPARISON</h1>
+      <div class="ph-sub">Year-on-year performance: 2025 vs 2026</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="grid g-6040">
+      <div class="panel">
+        <div class="panel-title">Property Rate Collections — 2025 vs 2026</div>
+        <div class="chart-box">
+          <canvas id="c-pr-yoy"></canvas>
+        </div>
+      </div>
+      <div class="vstack">
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p6-c0-val"></div>
+          <div class="stat-lbl" id="p6-c0-sub"></div>
+          <div class="stat-body" id="p6-c0-body"></div>
+        </div>
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p6-c1-val"></div>
+          <div class="stat-lbl" id="p6-c1-sub"></div>
+          <div class="stat-body" id="p6-c1-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">6</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 7 — PROPERTY RATE REVENUE COMPARISON (Historical)
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>PROPERTY RATE REVENUE COMPARISON</h1>
+      <div class="ph-sub">Historical full-year view — 2021 to 2026 YTD</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="grid g-6040">
+      <div class="panel">
+        <div class="panel-title">Property Rate — Annual Collections 2021–2026</div>
+        <div class="chart-box">
+          <canvas id="c-pr-historical"></canvas>
+        </div>
+      </div>
+      <div class="vstack">
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p7-c0-val"></div>
+          <div class="stat-lbl" id="p7-c0-sub"></div>
+          <div class="stat-body" id="p7-c0-body"></div>
+        </div>
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p7-c1-val"></div>
+          <div class="stat-lbl" id="p7-c1-sub"></div>
+          <div class="stat-body" id="p7-c1-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num" id="cs-partial-count">7</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 8 — BUSINESS OPERATING PERMIT
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>BUSINESS OPERATING PERMIT</h1>
+      <div class="ph-sub">Collections breakdown, business status, platform usage and month-on-month performance</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="kpi-row kpi-4">
+      <div class="kpi kpi-dark">
+        <div class="kpi-lbl">BOP Collections</div>
+        <div class="kpi-val" id="bop-total">GHS 4,729,055</div>
+        <div class="kpi-badge kpi-badge-g"><span id="bop-tx">2,630 transactions</div>
+      </div>
+      <div class="kpi kpi-green">
+        <div class="kpi-lbl">Paid Businesses</div>
+        <div class="kpi-val kpi-val-lg" id="bop-paid-count">2,335</div>
+        <div class="kpi-badge kpi-badge-g" id="bop-paid-val">GHS 4,627,955</div>
+      </div>
+      <div class="kpi kpi-gold">
+        <div class="kpi-lbl">Partially Paid</div>
+        <div class="kpi-val kpi-val-lg" style="color:var(--gold-deep);" id="bop-partial-count">254</div>
+        <div class="kpi-badge kpi-badge-gold" id="bop-partial-val">GHS 170,016</div>
+      </div>
+      <div class="kpi kpi-red">
+        <div class="kpi-lbl">Unpaid Businesses</div>
+        <div class="kpi-val kpi-val-lg" style="color:var(--red);" id="bop-unpaid-count">8,043</div>
+        <div class="kpi-badge kpi-badge-red" id="bop-unpaid-val">GHS 10,690,196</div>
+      </div>
+    </div>
+
+    <div class="grid g-4060">
+      <div class="panel">
+        <div class="panel-title">Platform Usage</div>
+        <div class="plat-list">
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Inspector Portal</span><span class="plat-val">1,302</span></div>
+            <div class="plat-track"><div class="plat-fill pf-g" style="width:100%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Customer Portal</span><span class="plat-val">656</span></div>
+            <div class="plat-track"><div class="plat-fill pf-gold" style="width:50%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Customer USSD</span><span class="plat-val">566</span></div>
+            <div class="plat-track"><div class="plat-fill pf-gl" style="width:43%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Inspector USSD</span><span class="plat-val">106</span></div>
+            <div class="plat-track"><div class="plat-fill pf-blue" style="width:8%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hd">
+          <div class="panel-title">Monthly Transactions (GHS)</div>
+          <div class="mom-wrap">
+            <div class="mom-val mom-down" id="bop-mom">▼ 51.56%</div>
+            <div class="mom-tiny" id="bop-mom-label">MoM Feb → Mar</div>
+          </div>
+        </div>
+        <div class="commentary" id="bop-commentary">The staff strike in March had a clear negative impact on this revenue line, leading to a second consecutive month of declining collections.</div>
+        <div class="chart-box">
+          <canvas id="c-bop-trend"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">8</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 9 — BOP: New Businesses & Past Payments
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>BUSINESS OPERATING PERMIT</h1>
+      <div class="ph-sub">New Businesses Added and Past Payment Additions — March 2026</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="grid g-6040" style="min-height:0; overflow:hidden;">
+      <div class="vstack" style="min-height:0; overflow:hidden;">
+        <div class="panel" style="flex:1; min-height:0;">
+          <div class="panel-title">New Businesses Added</div>
+          <div class="chart-box">
+            <canvas id="c-bop-newbiz"></canvas>
+          </div>
+        </div>
+        <div class="panel" style="flex:1; min-height:0;">
+          <div class="panel-title">Past Payments Applied (GHS)</div>
+          <div class="chart-box">
+            <canvas id="c-bop-pastpay"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="vstack" style="min-height:0; overflow:hidden;">
+        <div class="stat stat-up" style="flex:1; min-height:0; overflow:hidden;">
+          <div class="stat-num stat-num-up" id="p9-nb-val"></div>
+          <div class="stat-lbl" id="p9-nb-sub"></div>
+          <div class="stat-body" id="p9-nb-body"></div>
+        </div>
+        <div class="stat stat-up" style="flex:1; min-height:0; overflow:hidden;">
+          <div class="stat-num stat-num-up" id="p9-pp-val"></div>
+          <div class="stat-lbl" id="p9-pp-sub"></div>
+          <div class="stat-body" id="p9-pp-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">9</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 10 — BOP: Collections by Business Type
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>BUSINESS OPERATING PERMIT</h1>
+      <div class="ph-sub">Collections Progress by Business Type</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="grid g-6040">
+      <div class="panel" style="overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;flex-shrink:0;">
+          <span style="display:flex;align-items:center;gap:5px;font-size:14.5px;font-weight:600;color:var(--text-2);">
+            <span style="width:12px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--g700),var(--g500));display:inline-block;"></span>Expected Revenue
+          </span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:14.5px;font-weight:600;color:var(--text-2);">
+            <span style="width:12px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--gold-deep),var(--gold-mid));display:inline-block;"></span>Collected Revenue
+          </span>
+        </div>
+        <div id="biz-bars" style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;"></div>
+      </div>
+
+            <div class="vstack">
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p10-c0-val"></div>
+          <div class="stat-lbl" id="p10-c0-sub"></div>
+          <div class="stat-body" id="p10-c0-body"></div>
+        </div>
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p10-c1-val"></div>
+          <div class="stat-lbl" id="p10-c1-sub"></div>
+          <div class="stat-body" id="p10-c1-body"></div>
+        </div>
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p10-c2-val"></div>
+          <div class="stat-lbl" id="p10-c2-sub"></div>
+          <div class="stat-body" id="p10-c2-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">10</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 11 — BOP REVENUE COMPARISON (YoY)
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>BOP REVENUE COMPARISON</h1>
+      <div class="ph-sub">Year-on-year performance: 2024 · 2025 · 2026</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="grid g-6040">
+      <div class="panel">
+        <div class="panel-title">BOP Collections — 2024 / 2025 / 2026</div>
+        <div class="chart-box">
+          <canvas id="c-bop-yoy"></canvas>
+        </div>
+      </div>
+      <div class="vstack">
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p11-c0-val"></div>
+          <div class="stat-lbl" id="p11-c0-sub"></div>
+          <div class="stat-body" id="p11-c0-body"></div>
+        </div>
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p11-c1-val"></div>
+          <div class="stat-lbl" id="p11-c1-sub"></div>
+          <div class="stat-body" id="p11-c1-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">11</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 12 — BOP REVENUE COMPARISON (Historical)
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>BOP REVENUE COMPARISON</h1>
+      <div class="ph-sub">Historical full-year view — 2021 to 2026 YTD</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="grid g-6040">
+      <div class="panel">
+        <div class="panel-title">BOP — Annual Collections 2021–2026</div>
+        <div class="chart-box">
+          <canvas id="c-bop-historical"></canvas>
+        </div>
+      </div>
+      <div class="vstack">
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p12-c0-val"></div>
+          <div class="stat-lbl" id="p12-c0-sub"></div>
+          <div class="stat-body" id="p12-c0-body"></div>
+        </div>
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p12-c1-val"></div>
+          <div class="stat-lbl" id="p12-c1-sub"></div>
+          <div class="stat-body" id="p12-c1-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">12</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 13 — COMMERCIAL SIGNAGES
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>COMMERCIAL SIGNAGES</h1>
+      <div class="ph-sub">Collections breakdown, signage status, platform usage and daily pattern</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="kpi-row kpi-4">
+      <div class="kpi kpi-dark">
+        <div class="kpi-lbl">Commercial Signage</div>
+        <div class="kpi-val" id="cs-total">GHS 136,837</div>
+        <div class="kpi-badge kpi-badge-g"><span id="cs-tx">51 transactions</div>
+      </div>
+      <div class="kpi kpi-green">
+        <div class="kpi-lbl">Paid</div>
+        <div class="kpi-val kpi-val-lg" id="cs-paid-count">43</div>
+        <div class="kpi-badge kpi-badge-g" id="cs-paid-val">GHS 87,239</div>
+      </div>
+      <div class="kpi kpi-gold">
+        <div class="kpi-lbl">Partially Paid</div>
+        <div class="kpi-val kpi-val-lg" style="color:var(--gold-deep);">7</div>
+        <div class="kpi-badge kpi-badge-gold" id="cs-partial-val">GHS 49,762</div>
+      </div>
+      <div class="kpi kpi-red">
+        <div class="kpi-lbl">Unpaid</div>
+        <div class="kpi-val kpi-val-lg" style="color:var(--red);" id="cs-unpaid-count">2,325</div>
+        <div class="kpi-badge kpi-badge-red" id="cs-unpaid-val">GHS 4,965,927</div>
+      </div>
+    </div>
+
+    <div class="grid g-4060">
+      <div class="panel">
+        <div class="panel-title">Platform Usage</div>
+        <div class="plat-list">
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Customer Portal</span><span class="plat-val">23</span></div>
+            <div class="plat-track"><div class="plat-fill pf-gold" style="width:100%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Collectors Portal</span><span class="plat-val">16</span></div>
+            <div class="plat-track"><div class="plat-fill pf-g" style="width:70%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Customer USSD</span><span class="plat-val">12</span></div>
+            <div class="plat-track"><div class="plat-fill pf-blue" style="width:52%"></div></div>
+          </div>
+        </div>
+        <div class="commentary" id="cs-commentary">Collection activity has picked up strongly. Self-service payments dominate, accounting for <strong>69%</strong> of total transactions.</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hd">
+          <div class="panel-title">Monthly Transactions (GHS)</div>
+          <div class="mom-wrap">
+            <div class="mom-val mom-up" id="cs-mom">▲ 306.71%</div>
+            <div class="mom-tiny" id="cs-mom-label">MoM Feb → Mar</div>
+          </div>
+        </div>
+        <div class="chart-box">
+          <canvas id="c-cs-trend"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">13</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 14 — COMMERCIAL SIGNAGE REVENUE COMPARISON
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>COMMERCIAL SIGNAGE REVENUE COMPARISON</h1>
+      <div class="ph-sub">Year-on-year performance: 2025 vs 2026</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="grid g-6040">
+      <div class="panel">
+        <div class="panel-title">Commercial Signage Collections — 2025 vs 2026</div>
+        <div class="chart-box">
+          <canvas id="c-cs-yoy"></canvas>
+        </div>
+      </div>
+      <div class="vstack">
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p14-c0-val"></div>
+          <div class="stat-lbl" id="p14-c0-sub"></div>
+          <div class="stat-body" id="p14-c0-body"></div>
+        </div>
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p14-c1-val"></div>
+          <div class="stat-lbl" id="p14-c1-sub"></div>
+          <div class="stat-body" id="p14-c1-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">14</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 15 — INSPECTOR COLLECTIONS
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>INSPECTOR COLLECTIONS</h1>
+      <div class="ph-sub">Breakdown across Property Rates, BOP and Commercial Signage</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="kpi-row kpi-4">
+      <div class="kpi kpi-dark">
+        <div class="kpi-lbl">Total Transactions</div>
+        <div class="kpi-val" id="ins-total">GHS 6,354,740</div>
+        <div class="kpi-badge kpi-badge-g"><span id="ins-tx">2,365 transactions</div>
+      </div>
+      <div class="kpi kpi-green">
+        <div class="kpi-lbl">Property Rate</div>
+        <div class="kpi-val" id="ins-pr">GHS 2,987,501</div>
+        <div class="kpi-badge kpi-badge-g"><span id="ins-pr-tx">941 transactions</div>
+      </div>
+      <div class="kpi kpi-gold">
+        <div class="kpi-lbl">Business Operating Permit</div>
+        <div class="kpi-val" style="color:var(--gold-deep);" id="ins-bop">GHS 3,274,305</div>
+        <div class="kpi-badge kpi-badge-gold">1,408 transactions</div>
+      </div>
+      <div class="kpi kpi-blue">
+        <div class="kpi-lbl">Commercial Signages</div>
+        <div class="kpi-val" style="color:var(--blue);" id="ins-cs">GHS 92,934</div>
+        <div class="kpi-badge kpi-badge-blue"><span id="ins-cs-tx">16 transactions</div>
+      </div>
+    </div>
+
+    <div class="grid g-4060">
+      <div class="panel">
+        <div class="panel-title">Platform</div>
+        <div class="plat-list">
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Inspector Portal</span><span class="plat-val" id="ins-plat-ip">2,248</span></div>
+            <div class="plat-track"><div class="plat-fill pf-g" style="width:100%"></div></div>
+          </div>
+          <div class="plat-item">
+            <div class="plat-hd"><span class="plat-lbl">Inspector USSD</span><span class="plat-val" id="ins-plat-iu">117</span></div>
+            <div class="plat-track"><div class="plat-fill pf-gold" style="width:5%"></div></div>
+          </div>
+        </div>
+        <div class="commentary" style="margin-top:auto;" id="ins-commentary">Inspector Portal dominates field collections, accounting for 95% of all inspector-led transactions across all revenue lines.</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Monthly Inspector Collections (GHS)</div>
+        <div class="chart-box">
+          <canvas id="c-insp-trend"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">15</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 16 — OVERALL COLLECTIONS COMPARISON (Historical)
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>OVERALL COLLECTIONS COMPARISON</h1>
+      <div class="ph-sub">Grand total of collections — historical view 2021 to 2026 YTD</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc">
+    <div class="grid g-6040">
+      <div class="panel">
+        <div class="panel-title">Total Collections — Annual View 2021–2026</div>
+        <div class="chart-box">
+          <canvas id="c-overall-historical"></canvas>
+        </div>
+      </div>
+      <div class="vstack">
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p16-c0-val"></div>
+          <div class="stat-lbl" id="p16-c0-sub"></div>
+          <div class="stat-body" id="p16-c0-body"></div>
+        </div>
+        <div class="stat stat-up">
+          <div class="stat-num stat-num-up" id="p16-c1-val"></div>
+          <div class="stat-lbl" id="p16-c1-sub"></div>
+          <div class="stat-body" id="p16-c1-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">16</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE 17 — A.M.A FINANCIAL SUMMARY
+     ============================================================ -->
+<div class="page">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>A.M.A FINANCIAL SUMMARY</h1>
+      <div class="ph-sub">Transfers and sweeps made by the Accra Metropolitan Assembly — 2026</div>
+    </div>
+    <div class="ph-period">Period: 1st January 2026 – 31st March 2026</div>
+  </div>
+  <div class="ph-rule"></div>
+
+  <div class="pc" style="justify-content:center;">
+    <div class="grid g-5050" style="flex:none;align-items:start;gap:24px;">
+
+      <!-- LEFT: Collections table + Sweep box -->
+      <div class="vstack" style="gap:14px;">
+        <table class="tbl" style="margin-bottom:0;font-size:20px;">
+          <thead>
+            <tr>
+              <th style="font-size:20px;">Description</th>
+              <th style="font-size:20px;text-align:right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Business Operating Permit</td><td style="text-align:right;" id="fin-bop-val">GHS 4,729,055</td></tr>
+            <tr><td>Property Rate</td><td style="text-align:right;" id="fin-pr-val">GHS 4,172,219</td></tr>
+            <tr><td>Commercial Signage</td><td style="text-align:right;" id="fin-cs-val">GHS 136,837</td></tr>
+          </tbody>
+          <tfoot>
+            <tr class="total" style="font-size:20px;">
+              <td><strong>Total Collections</strong></td>
+              <td style="text-align:right;color:var(--gold-light);font-size:20px;"><strong id="fin-total">GHS 9,038,111</strong></td>
+            </tr>
+            <tr class="subtotal" style="font-size:20px;">
+              <td><strong>Revenue Due A.M.A (70%)</strong></td>
+              <td style="text-align:right;font-size:20px;"><strong id="fin-rev-due">GHS 6,326,677.70</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="sweep-box">
+          <div class="sweep-tag" style="font-size:20px;" id="fin-sweep-date">March Sweep — 12/03/2026</div>
+          <div class="sweep-val" style="font-size:38px;" id="fin-sweep-val">GHS 2,256,962.15</div>
+          <div class="sweep-sub" style="font-size:20px;">Single transfer processed · <span id="fin-sweep-sub">Remaining balance: GHS 533,926</span></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Transfers table -->
+      <div>
+        <table class="tbl" style="font-size:20px;">
+          <thead>
+            <tr>
+              <th style="font-size:20px;">Transfers / Sweeps</th>
+              <th style="font-size:20px;text-align:right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tbody id="fin-transfers-tbody"><tr><td>12/03/2026</td><td style="text-align:right;">GHS 2,256,962.15</td></tr>
+            <tr><td>10/02/2026</td><td style="text-align:right;">GHS 1,588,246.65</td></tr>
+            <tr><td>19/01/2026</td><td style="text-align:right;">GHS 1,947,542.90</td></tr>
+          </tbody>
+          <tfoot>
+            <tr class="total" style="font-size:20px;">
+              <td><strong>Total Transfers</strong></td>
+              <td style="text-align:right;color:var(--gold-light);font-size:20px;"><strong id="fin-total-tx">GHS 5,792,751.70</strong></td>
+            </tr>
+            <tr style="font-size:20px;">
+              <td style="background:var(--g050);color:var(--g700);font-weight:700;padding:7px 12px;border-top:2px solid var(--g400);font-size:20px;"><strong>Balance</strong></td>
+              <td style="background:var(--g050);color:var(--g700);font-weight:700;padding:7px 12px;border-top:2px solid var(--g400);text-align:right;font-size:20px;"><strong id="fin-balance">GHS 533,926</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="pf">
+    <div class="pf-title">AMA Digitalisation Project · March 2026 Performance Report</div>
+    <div class="pf-num">17</div>
+  </div>
+</div>
+
+<!-- ================================================================
+     CHARTS
+     ================================================================ -->
+<script>
+Chart.register(ChartDataLabels);
+
+const G800='#1a3d2a', G700='#1e4d35', G600='#256040', G500='#2e7d4f',
+      G400='#3a9e63', G300='#5cb87a', G200='#a8d9b8', G100='#d4eedd',
+      GOLD='#c8a84b', GOLDM='#d4b862', GOLDL='#e8d08a',
+      RED='#b83232', BLUE='#2471a3',
+      GREY='#b0c4b8',
+      H2021='#4a7c6f', H2022='#6b8f5e', H2023='#8aac72',
+      GREYL='#e8f0ec';
+
+Chart.defaults.font.family="'DM Sans','Calibri',system-ui,sans-serif";
+Chart.defaults.font.size=13;
+Chart.defaults.color='#5a7a66';
+
+/* ── helper to format axis ticks ── */
+function fmtTick(v){
+  if(v>=1000000) return 'GHS '+(v/1000000).toFixed(1)+'M';
+  if(v>=1000)    return 'GHS '+(v/1000).toFixed(0)+'K';
+  return v;
+}
+
+/* ── format data labels on bars ── */
+function fmtLabel(v){
+  if(v>=1000000) return 'GHS '+(v/1000000).toFixed(2)+'M';
+  if(v>=1000)    return 'GHS '+(v/1000).toFixed(0)+'K';
+  if(v===0)      return '';
+  return v;
+}
+
+function fmtLabelShort(v){
+  if(v>=1000000) return (v/1000000).toFixed(2)+'M';
+  if(v>=1000)    return (v/1000).toFixed(0)+'K';
+  if(v===0)      return '';
+  return v;
+}
+
+/* ── shared options ── */
+const baseOpts = {
+  responsive:true,
+  maintainAspectRatio:false,
+  layout:{ padding:{ top:22 } },
+  plugins:{
+    legend:{ display:false },
+    tooltip:{ enabled:true }
+  },
+  scales:{
+    x:{ grid:{ display:false }, ticks:{ font:{size:13} }, border:{ display:false } },
+    y:{ grid:{ color:GREYL, lineWidth:0.75, drawTicks:false },
+        ticks:{ font:{size:12}, padding:4, callback:fmtTick },
+        border:{ display:false } }
+  }
+};
+
+/* ── bar dataset defaults ── */
+function bd(data, color, label=''){
+  return {
+    label, data,
+    backgroundColor: color,
+    borderRadius:{ topLeft:4, topRight:4, bottomLeft:0, bottomRight:0 },
+    borderSkipped:false,
+    barPercentage:0.62,
+    categoryPercentage:0.75
+  };
+}
+
+/* ── datalabel plugin config for single-series charts ── */
+function dlSingle(){
+  return {
+    datalabels:{
+      anchor:'end', align:'top', offset:4,
+      font:{ size:11, weight:'700', family:"'DM Sans',sans-serif" },
+      color: '#0f2d1e',
+      formatter: fmtLabel,
+      display: ctx => ctx.dataset.data[ctx.dataIndex] > 0
+    }
+  };
+}
+
+function dlGrouped(){
+  return {
+    datalabels:{
+      anchor:'end', align:'top', offset:4,
+      font:{ size:10, weight:'700', family:"'DM Sans',sans-serif" },
+      color: G700,
+      formatter: fmtLabelShort,
+      display: ctx => ctx.dataset.data[ctx.dataIndex] > 0
+    }
+  };
+}
+
+/* ── horizontal bar datalabels ── */
+function dlH(){
+  return {
+    datalabels:{
+      anchor:'end', align:'end', offset:2,
+      font:{ size:12, weight:'700' },
+      color: G700,
+      formatter: v => v > 0 ? v : '',
+    }
+  };
+}
+
+/* ── chart factory ── */
+function mkChart(id, type, labels, datasets, opts={}){
+  const ctx=document.getElementById(id);
+  if(!ctx) return;
+  return new Chart(ctx,{
+    type, data:{labels, datasets},
+    options:{...baseOpts, plugins:{...baseOpts.plugins, ...opts.plugins},
+      scales: type==='bar' && opts.horizontal
+        ? { x:{...baseOpts.scales.y, ticks:{...baseOpts.scales.y.ticks, callback: opts.hTick||fmtTick}},
+            y:{...baseOpts.scales.x} }
+        : baseOpts.scales,
+      ...opts.extra
+    }
+  });
+}
+
+/* ────────────────────────────────────────
+   All charts created after page load so
+   window.AMA (set by binding script) is ready
+   ──────────────────────────────────────── */
+window.addEventListener('load', function() {
+
+// ── Pull live data from binding script ──
+const _D  = (window.AMA && window.AMA.D) ? window.AMA.D : loadCurrentData();
+const _H  = (window.AMA && window.AMA.H) ? window.AMA.H : loadHistoricalData();
+const _PR  = _D.property_rate;
+const _BOP = _D.bop;
+const _CS  = _D.signage;
+const _INS = _D.inspector;
+const _OV  = _D.overview;
+const _OVA = _D.overall;
+
+// ── Build month labels from actual data (only months with values) ──
+function activeMonths(trendObj) {
+  return MONTHS.filter(m => trendObj[m] !== null && trendObj[m] !== undefined);
+}
+function activeLabels(trendObj) {
+  return activeMonths(trendObj).map(m => MONTH_LABELS[MONTHS.indexOf(m)]);
+}
+function activeValues(trendObj) {
+  return activeMonths(trendObj).map(m => trendObj[m]);
+}
+function activeColors(trendObj, colorArr) {
+  const months = activeMonths(trendObj);
+  return months.map((m, i) => Array.isArray(colorArr) ? colorArr[i % colorArr.length] : colorArr);
+}
+
+/* ────────────────────────────────────────
+   P2 – Overview Trend
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-overview-trend'),{
+  type:'bar',
+  data:{ labels: activeLabels(_OV.monthly_trend),
+    datasets:[bd(activeValues(_OV.monthly_trend), activeColors(_OV.monthly_trend, [G700,G700,G500,G400,G400,G400,G400,G400,G400,G400,G400,G400]))] },
+  options:{...baseOpts, plugins:{...baseOpts.plugins,...dlSingle()}}
+});
+
+/* ────────────────────────────────────────
+   P3 – Overall YoY (grouped)
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-overall-yoy'),{
+  type:'bar',
+  data:{ labels: activeLabels(_OVA.yoy_2026),
+    datasets:[
+      bd(activeValues(_OVA.yoy_2024), GREY, '2024'),
+      bd(activeValues(_OVA.yoy_2025), GOLD, '2025'),
+      bd(activeValues(_OVA.yoy_2026), G600, '2026')
+    ]},
+  options:{...baseOpts,
+    plugins:{
+      legend:{ display:true, position:'bottom',
+        labels:{ boxWidth:10, boxHeight:6, padding:10, font:{size:12.5},
+          generateLabels: chart => chart.data.datasets.map((ds,i)=>({
+            text:ds.label, fillStyle:Array.isArray(ds.backgroundColor)?ds.backgroundColor[0]:ds.backgroundColor,
+            hidden:false, index:i, datasetIndex:i
+          }))
+        }},
+      ...dlGrouped()
+    }}
+});
+
+/* ────────────────────────────────────────
+   P4 – Property Rate Trend
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-pr-trend'),{
+  type:'bar',
+  data:{ labels: activeLabels(_PR.monthly_trend),
+    datasets:[bd(activeValues(_PR.monthly_trend), activeColors(_PR.monthly_trend,[G700,G700,G500,G400,G400,G400,G400,G400,G400,G400,G400,G400]))] },
+  options:{...baseOpts, plugins:{...baseOpts.plugins,...dlSingle()}}
+});
+
+/* ────────────────────────────────────────
+   P5 – PR New Properties (horizontal)
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-pr-newprops'),{
+  type:'bar',
+  data:{ labels: activeLabels(_PR.new_properties),
+    datasets:[{
+      data: activeValues(_PR.new_properties),
+      backgroundColor:[GOLDL,G700,GREY],
+      borderRadius:{topLeft:0,topRight:4,bottomLeft:0,bottomRight:4},
+      borderSkipped:false, barPercentage:0.6, categoryPercentage:0.8
+    }]},
+  options:{...baseOpts,
+    indexAxis:'y',
+    plugins:{...baseOpts.plugins,...dlH()},
+    scales:{
+      x:{ grid:{color:GREYL, lineWidth:0.75}, ticks:{font:{size:12}}, border:{display:false} },
+      y:{ grid:{display:false}, ticks:{font:{size:12.5}}, border:{display:false} }
+    }}
+});
+
+/* P5 – PR Past Payments (horizontal) */
+new Chart(document.getElementById('c-pr-pastpay'),{
+  type:'bar',
+  data:{ labels: activeLabels(_PR.past_payments),
+    datasets:[{
+      data: activeValues(_PR.past_payments),
+      backgroundColor:[GOLDL,G700,GREY],
+      borderRadius:{topLeft:0,topRight:4,bottomLeft:0,bottomRight:4},
+      borderSkipped:false, barPercentage:0.6, categoryPercentage:0.8
+    }]},
+  options:{...baseOpts,
+    indexAxis:'y',
+    layout:{ padding:{ right:72, top:4 } },
+    plugins:{...baseOpts.plugins, datalabels:{
+      anchor:'end', align:'end', offset:6,
+      font:{size:12,weight:'700'},
+      color:G700,
+      clamp:false,
+      formatter: v=>v>=1000000?(v/1000000).toFixed(2)+'M':v>=1000?(v/1000).toFixed(0)+'K':v,
+      display: ctx=>ctx.dataset.data[ctx.dataIndex]>0
+    }},
+    scales:{
+      x:{ grid:{color:GREYL,lineWidth:0.75}, ticks:{font:{size:12}, callback:v=>v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v}, border:{display:false} },
+      y:{ grid:{display:false}, ticks:{font:{size:12.5}}, border:{display:false} }
+    }}
+});
+
+/* ────────────────────────────────────────
+   P6 – PR YoY
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-pr-yoy'),{
+  type:'bar',
+  data:{ labels: activeLabels(_PR.monthly_trend),
+    datasets:[
+      bd(activeValues(_PR.yoy_2025),GOLD,'2025'),
+      bd(activeValues(_PR.monthly_trend),G600,'2026')
+    ]},
+  options:{...baseOpts,
+    plugins:{ legend:{display:true,position:'bottom',labels:{boxWidth:10,boxHeight:6,padding:10,font:{size:12.5}}}, ...dlGrouped() }}
+});
+
+/* ────────────────────────────────────────
+   P7 – PR Historical
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-pr-historical'),{
+  type:'bar',
+  data:{ labels:['2021','2022','2023','2024','2025','2026 YTD'],
+    datasets:[bd([_H.property_rate[2021]||0,_H.property_rate[2022]||0,_H.property_rate[2023]||0,_H.property_rate[2024]||0,_H.property_rate[2025]||0,_PR.collections||0],
+      [H2021,H2022,H2023,GOLDL,G700,G400])] },
+  options:{...baseOpts, plugins:{...baseOpts.plugins,...dlSingle()},
+    scales:{...baseOpts.scales, y:{...baseOpts.scales.y, ticks:{...baseOpts.scales.y.ticks,
+      callback:v=>v>=1000000?(v/1000000).toFixed(0)+'M':v>=1000?(v/1000).toFixed(0)+'K':v}}}}
+});
+
+/* ────────────────────────────────────────
+   P8 – BOP Trend
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-bop-trend'),{
+  type:'bar',
+  data:{ labels: activeLabels(_BOP.monthly_trend),
+    datasets:[bd(activeValues(_BOP.monthly_trend), activeColors(_BOP.monthly_trend,[G700,G600,'#8a9e94','#8a9e94','#8a9e94','#8a9e94','#8a9e94','#8a9e94','#8a9e94','#8a9e94','#8a9e94','#8a9e94']))] },
+  options:{...baseOpts, plugins:{...baseOpts.plugins,...dlSingle()}}
+});
+
+/* ────────────────────────────────────────
+   P9 – BOP New Businesses (horizontal)
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-bop-newbiz'),{
+  type:'bar',
+  data:{ labels: activeLabels(_BOP.new_businesses),
+    datasets:[{data: activeValues(_BOP.new_businesses),
+      backgroundColor: activeColors(_BOP.new_businesses,[GOLDL,G700,GREY,GREY,GREY,GREY,GREY,GREY,GREY,GREY,GREY,GREY]),
+      borderRadius:{topLeft:0,topRight:4,bottomLeft:0,bottomRight:4},
+      borderSkipped:false,barPercentage:0.6,categoryPercentage:0.8}]},
+  options:{...baseOpts, indexAxis:'y',
+    plugins:{...baseOpts.plugins,...dlH()},
+    scales:{
+      x:{grid:{color:GREYL,lineWidth:0.75},ticks:{font:{size:12}},border:{display:false}},
+      y:{grid:{display:false},ticks:{font:{size:12.5}},border:{display:false}}}}
+});
+
+/* P9 – BOP Past Payments (horizontal) */
+new Chart(document.getElementById('c-bop-pastpay'),{
+  type:'bar',
+  data:{ labels: activeLabels(_BOP.past_payments),
+    datasets:[{data: activeValues(_BOP.past_payments),
+      backgroundColor: activeColors(_BOP.past_payments,[GOLDL,G700,GREY,GREY,GREY,GREY,GREY,GREY,GREY,GREY,GREY,GREY]),
+      borderRadius:{topLeft:0,topRight:4,bottomLeft:0,bottomRight:4},
+      borderSkipped:false,barPercentage:0.6,categoryPercentage:0.8}]},
+  options:{...baseOpts, indexAxis:'y',
+    layout:{ padding:{ right:72, top:4 } },
+    plugins:{...baseOpts.plugins, datalabels:{
+      anchor:'end', align:'end', offset:6,
+      font:{size:12,weight:'700'},
+      color:G700,
+      clamp:false,
+      formatter: v=>v>=1000?(v/1000).toFixed(0)+'K':v>0?v:'',
+      display: ctx=>ctx.dataset.data[ctx.dataIndex]>0
+    }},
+    scales:{
+      x:{grid:{color:GREYL,lineWidth:0.75},ticks:{font:{size:12},callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v},border:{display:false}},
+      y:{grid:{display:false},ticks:{font:{size:12.5}},border:{display:false}}}}
+});
+
+/* ────────────────────────────────────────
+   P10 – Biz Type Custom Bars
+   ──────────────────────────────────────── */
+(function(){
+  const data = _BOP.business_types.map(t => ({
+    label: t.name.replace(/ \/ /g,'\n'),
+    exp: t.expected, col: t.collected
+  }));
+  const maxV=Math.max(...data.map(d=>d.exp), 1);
+  const c=document.getElementById('biz-bars');
+  if(!c)return;
+  c.innerHTML = '';
+  const fmt=v=>v>=1000000?(v/1000000).toFixed(2)+'M':v>=1000?(v/1000).toFixed(0)+'K':v;
+  data.forEach(item=>{
+    const eP=(item.exp/maxV*100).toFixed(1);
+    const cP=(item.col/maxV*100).toFixed(1);
+    const row=document.createElement('div');
+    row.className='biz-row';
+    row.innerHTML=`
+      <div class="biz-lbl">${item.label.replace(/\n/g,'<br>')}</div>
+      <div class="biz-track">
+        <div class="biz-exp" style="width:${eP}%"></div>
+        <div class="biz-col" style="width:${cP}%"></div>
+      </div>
+      <div class="biz-val">${fmt(item.col)}</div>`;
+    c.appendChild(row);
+  });
+})();
+
+/* ────────────────────────────────────────
+   P11 – BOP YoY
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-bop-yoy'),{
+  type:'bar',
+  data:{ labels: activeLabels(_BOP.monthly_trend),
+    datasets:[
+      bd(activeValues(_BOP.yoy_2024),GREY,'2024'),
+      bd(activeValues(_BOP.yoy_2025),GOLD,'2025'),
+      bd(activeValues(_BOP.monthly_trend),G600,'2026')
+    ]},
+  options:{...baseOpts,
+    plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,boxHeight:6,padding:10,font:{size:12.5}}},...dlGrouped()}}
+});
+
+/* ────────────────────────────────────────
+   P12 – BOP Historical
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-bop-historical'),{
+  type:'bar',
+  data:{ labels:['2021','2022','2023','2024','2025','2026 YTD'],
+    datasets:[bd([_H.bop[2021]||0,_H.bop[2022]||0,_H.bop[2023]||0,_H.bop[2024]||0,_H.bop[2025]||0,_BOP.collections||0],
+      [H2021,H2022,H2023,GOLDL,G700,G400])]},
+  options:{...baseOpts, plugins:{...baseOpts.plugins,...dlSingle()},
+    scales:{...baseOpts.scales, y:{...baseOpts.scales.y, ticks:{...baseOpts.scales.y.ticks,
+      callback:v=>v>=1000000?(v/1000000).toFixed(0)+'M':v>=1000?(v/1000).toFixed(0)+'K':v}}}}
+});
+
+/* ────────────────────────────────────────
+   P13 – Commercial Signage Trend
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-cs-trend'),{
+  type:'bar',
+  data:{ labels: activeLabels(_CS.monthly_trend),
+    datasets:[bd(activeValues(_CS.monthly_trend), activeColors(_CS.monthly_trend,[H2021,G700,G500,G400,G400,G400,G400,G400,G400,G400,G400,G400]))] },
+  options:{...baseOpts, plugins:{...baseOpts.plugins,...dlSingle()}}
+});
+
+/* ────────────────────────────────────────
+   P14 – Commercial Signage YoY
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-cs-yoy'),{
+  type:'bar',
+  data:{ labels: activeLabels(_CS.monthly_trend),
+    datasets:[
+      bd(activeValues(_CS.yoy_2025),GOLD,'2025'),
+      bd(activeValues(_CS.monthly_trend),G600,'2026')
+    ]},
+  options:{...baseOpts,
+    plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,boxHeight:6,padding:10,font:{size:12.5}}},...dlGrouped()}}
+});
+
+/* ────────────────────────────────────────
+   P15 – Inspector Trend
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-insp-trend'),{
+  type:'bar',
+  data:{ labels: activeLabels(_INS.monthly_trend),
+    datasets:[bd(activeValues(_INS.monthly_trend), activeColors(_INS.monthly_trend,[G700,G700,G500,G400,G400,G400,G400,G400,G400,G400,G400,G400]))] },
+  options:{...baseOpts, plugins:{...baseOpts.plugins,...dlSingle()}}
+});
+
+/* ────────────────────────────────────────
+   P16 – Overall Historical
+   ──────────────────────────────────────── */
+new Chart(document.getElementById('c-overall-historical'),{
+  type:'bar',
+  data:{ labels:['2021','2022','2023','2024','2025','2026 YTD'],
+    datasets:[bd([_H.overall[2021]||0,_H.overall[2022]||0,_H.overall[2023]||0,_H.overall[2024]||0,_H.overall[2025]||0,_OV.total_collections||0],
+      [H2021,H2022,H2023,GOLDL,G700,G400])]},
+  options:{...baseOpts, plugins:{...baseOpts.plugins,...dlSingle()},
+    scales:{...baseOpts.scales, y:{...baseOpts.scales.y, ticks:{...baseOpts.scales.y.ticks,
+      callback:v=>v>=1000000?(v/1000000).toFixed(0)+'M':v>=1000?(v/1000).toFixed(0)+'K':v}}}}
+});
+
+}); // end window load listener
+</script>
+
+<!-- ================================================================
+     DATA BINDING — reads injected data (from form) or falls back to localStorage
+     ================================================================ -->
+<script>
+(function(){
+  // ── Primary: blob-injected data from form ──
+  let D, H;
+  if (window.__AMA_INJECTED__) {
+    D = migrateData(window.__AMA_INJECTED__.current);
+    H = window.__AMA_INJECTED__.historical;
+  }
+  if (!D) {
+    try {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#data=')) {
+        const bundle = JSON.parse(decodeURIComponent(hash.slice(6)));
+        D = migrateData(bundle.current); H = bundle.historical;
+      }
+    } catch(e) {}
+  }
+  if (!D) D = loadCurrentData();
+  if (!H) H = loadHistoricalData();
+
+  const M  = D.meta;
+  const CL = D.callouts || {};
+
+  // Formatters — full decimals
+  const fmtGHS = n => {
+    if (n===null||n===undefined) return '';
+    return 'GHS '+Number(n).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2});
+  };
+  const fmtGHScover = n => {
+    if (n===null||n===undefined) return '';
+    const v=Number(n);
+    if(v>=1000000) return 'GHS '+(v/1000000).toFixed(2)+'M';
+    if(v>=1000)    return 'GHS '+(v/1000).toFixed(1)+'K';
+    return 'GHS '+v.toFixed(0);
+  };
+  const fmtN   = n => Number(n).toLocaleString('en-GH',{minimumFractionDigits:0,maximumFractionDigits:2});
+  const fmtPct = n => Number(n).toFixed(2)+'%';
+
+  function set(id,val){const e=document.getElementById(id);if(e)e.textContent=val;}
+
+  // MoM auto-text
+  const monthIdx=monthIndex(M.month);
+  const prevLbl=MONTH_LABELS[monthIdx>0?monthIdx-1:11];
+  const momText='MoM '+prevLbl.slice(0,3)+' \u2192 '+M.month.slice(0,3);
+
+  // MoM with color
+  function applyMoM(elId, labelId, direction, value) {
+    const el=document.getElementById(elId);
+    if(!el)return;
+    const arrow=direction==='up'?'\u25b2':'\u25bc';
+    el.textContent=arrow+' '+fmtPct(value);
+    el.className='mom-val '+(direction==='up'?'mom-up':'mom-down');
+    set(labelId,momText);
+  }
+
+  // Callout helper
+  function setCallout(prefix,c){
+    if(!c)return;
+    set(prefix+'-val',  c.value||'');
+    set(prefix+'-sub',  c.subtitle||'');
+    set(prefix+'-body', c.commentary||'');
+  }
+
+  // Title
+  document.getElementById('report-title').textContent=
+    'AMA Digitalisation Project \u2013 '+M.month+' '+M.year+' Performance Report';
+  document.querySelectorAll('.ph-period').forEach(el=>el.textContent='Period: '+M.period);
+
+  // Cover
+  set('cv-month',M.month+' '+M.year);
+  set('cv-total',fmtGHScover(D.overview.total_collections));
+  set('cv-yoy', CL.overall_yoy&&CL.overall_yoy[0]?CL.overall_yoy[0].value:'');
+  // Dynamic cover YoY label: "vs [Month] [Year-1]"
+  const prevYear = parseInt(M.year) - 1;
+  set('cv-yoy-label', 'vs ' + M.month + ' ' + prevYear);
+  set('cv-tx',  fmtN(D.overview.total_transactions));
+
+  // P2
+  set('ov-total',  fmtGHS(D.overview.total_collections));
+  set('ov-tx',     fmtN(D.overview.total_transactions)+' transactions');
+  set('ov-pr',     fmtGHS(D.property_rate.collections));
+  set('ov-pr-tx',  fmtN(D.property_rate.transactions)+' transactions');
+  set('ov-bop',    fmtGHS(D.bop.collections));
+  set('ov-bop-tx', fmtN(D.bop.transactions)+' transactions');
+  set('ov-cs',     fmtGHS(D.signage.collections));
+  set('ov-cs-tx',  fmtN(D.signage.transactions)+' transactions');
+  set('ov-plat-ip',fmtN(D.overview.platform.inspector_portal));
+  set('ov-plat-cp',fmtN(D.overview.platform.customer_portal));
+  set('ov-plat-cu',fmtN(D.overview.platform.customer_ussd));
+  set('ov-plat-iu',fmtN(D.overview.platform.inspector_ussd));
+  applyMoM('ov-mom','ov-mom-label',D.overview.mom_direction,D.overview.mom_change);
+
+  // P3 callouts
+  if(CL.overall_yoy){setCallout('p3-c0',CL.overall_yoy[0]);setCallout('p3-c1',CL.overall_yoy[1]);}
+
+  // P4
+  set('pr-total',        fmtGHS(D.property_rate.collections));
+  set('pr-tx',           fmtN(D.property_rate.transactions)+' transactions');
+  set('pr-paid-count',   fmtN(D.property_rate.paid_count));
+  set('pr-paid-val',     fmtGHS(D.property_rate.paid_value));
+  set('pr-partial-count',fmtN(D.property_rate.partial_count));
+  set('pr-partial-val',  fmtGHS(D.property_rate.partial_value));
+  set('pr-unpaid-count', fmtN(D.property_rate.unpaid_count));
+  set('pr-unpaid-val',   fmtGHS(D.property_rate.unpaid_value));
+  set('pr-plat-ip',fmtN(D.property_rate.platform.inspector_portal));
+  set('pr-plat-cp',fmtN(D.property_rate.platform.customer_portal));
+  set('pr-plat-cu',fmtN(D.property_rate.platform.customer_ussd));
+  set('pr-plat-iu',fmtN(D.property_rate.platform.inspector_ussd));
+  set('pr-commentary',D.property_rate.commentary);
+  applyMoM('pr-mom','pr-mom-label',D.property_rate.mom_direction,D.property_rate.mom_change);
+
+  // P5
+  if(CL.pr_new_properties) setCallout('p5-np',CL.pr_new_properties);
+  if(CL.pr_past_payments)  setCallout('p5-pp',CL.pr_past_payments);
+
+  // P6
+  if(CL.pr_yoy){setCallout('p6-c0',CL.pr_yoy[0]);setCallout('p6-c1',CL.pr_yoy[1]);}
+
+  // P7
+  if(CL.pr_historical){setCallout('p7-c0',CL.pr_historical[0]);setCallout('p7-c1',CL.pr_historical[1]);}
+
+  // P8
+  set('bop-total',        fmtGHS(D.bop.collections));
+  set('bop-tx',           fmtN(D.bop.transactions)+' transactions');
+  set('bop-paid-count',   fmtN(D.bop.paid_count));
+  set('bop-paid-val',     fmtGHS(D.bop.paid_value));
+  set('bop-partial-count',fmtN(D.bop.partial_count));
+  set('bop-partial-val',  fmtGHS(D.bop.partial_value));
+  set('bop-unpaid-count', fmtN(D.bop.unpaid_count));
+  set('bop-unpaid-val',   fmtGHS(D.bop.unpaid_value));
+  set('bop-plat-ip',fmtN(D.bop.platform.inspector_portal));
+  set('bop-plat-cp',fmtN(D.bop.platform.customer_portal));
+  set('bop-plat-cu',fmtN(D.bop.platform.customer_ussd));
+  set('bop-plat-iu',fmtN(D.bop.platform.inspector_ussd));
+  set('bop-commentary',D.bop.commentary);
+  applyMoM('bop-mom','bop-mom-label',D.bop.mom_direction,D.bop.mom_change);
+
+  // P9
+  if(CL.bop_new_businesses) setCallout('p9-nb',CL.bop_new_businesses);
+  if(CL.bop_past_payments)  setCallout('p9-pp',CL.bop_past_payments);
+
+  // P10 — business type callouts
+  if(CL.bop_compliance){
+    setCallout('p10-c0',CL.bop_compliance[0]);
+    setCallout('p10-c1',CL.bop_compliance[1]);
+    setCallout('p10-c2',CL.bop_compliance[2]);
+  }
+
+  // P11
+  if(CL.bop_yoy){setCallout('p11-c0',CL.bop_yoy[0]);setCallout('p11-c1',CL.bop_yoy[1]);}
+
+  // P12
+  if(CL.bop_historical){setCallout('p12-c0',CL.bop_historical[0]);setCallout('p12-c1',CL.bop_historical[1]);}
+
+  // P13
+  set('cs-total',        fmtGHS(D.signage.collections));
+  set('cs-tx',           fmtN(D.signage.transactions)+' transactions');
+  set('cs-paid-count',   fmtN(D.signage.paid_count));
+  set('cs-paid-val',     fmtGHS(D.signage.paid_value));
+  set('cs-partial-count',fmtN(D.signage.partial_count));
+  set('cs-partial-val',  fmtGHS(D.signage.partial_value));
+  set('cs-unpaid-count', fmtN(D.signage.unpaid_count));
+  set('cs-unpaid-val',   fmtGHS(D.signage.unpaid_value));
+  set('cs-plat-cp', fmtN(D.signage.platform.customer_portal));
+  set('cs-plat-col',fmtN(D.signage.platform.collectors_portal));
+  set('cs-plat-cu', fmtN(D.signage.platform.customer_ussd));
+  set('cs-selfservice',fmtPct(D.signage.self_service_pct));
+  set('cs-commentary',D.signage.commentary);
+  applyMoM('cs-mom','cs-mom-label',D.signage.mom_direction,D.signage.mom_change);
+
+  // P14
+  if(CL.cs_yoy){setCallout('p14-c0',CL.cs_yoy[0]);setCallout('p14-c1',CL.cs_yoy[1]);}
+
+  // P15
+  set('ins-total',  fmtGHS(D.inspector.total_collections));
+  set('ins-tx',     fmtN(D.inspector.total_transactions)+' transactions');
+  set('ins-pr',     fmtGHS(D.inspector.property_rate));
+  set('ins-pr-tx',  fmtN(D.inspector.property_rate_transactions)+' transactions');
+  set('ins-bop',    fmtGHS(D.inspector.bop));
+  set('ins-bop-tx', fmtN(D.inspector.bop_transactions)+' transactions');
+  set('ins-cs',     fmtGHS(D.inspector.signage));
+  set('ins-cs-tx',  fmtN(D.inspector.signage_transactions)+' transactions');
+  set('ins-plat-ip',fmtN(D.inspector.platform.inspector_portal));
+  set('ins-plat-iu',fmtN(D.inspector.platform.inspector_ussd));
+  set('ins-commentary',D.inspector.commentary);
+
+  // P16
+  if(CL.overall_historical){setCallout('p16-c0',CL.overall_historical[0]);setCallout('p16-c1',CL.overall_historical[1]);}
+
+  // P17
+  const tc=D.overview.total_collections;
+  const rd=tc*(D.financial.ama_share_pct/100);
+  set('fin-bop-val',  fmtGHS(D.bop.collections));
+  set('fin-pr-val',   fmtGHS(D.property_rate.collections));
+  set('fin-cs-val',   fmtGHS(D.signage.collections));
+  set('fin-total',    fmtGHS(tc));
+  set('fin-rev-due',  fmtGHS(rd));
+  set('fin-total-tx', fmtGHS(D.financial.total_transfers));
+  set('fin-balance',  fmtGHS(D.financial.balance));
+  set('fin-sweep-date',D.financial.latest_sweep_date);
+  set('fin-sweep-val', fmtGHS(D.financial.latest_sweep_amount));
+  set('fin-sweep-sub','Single transfer processed \u00b7 Remaining balance: '+fmtGHS(D.financial.balance));
+
+  const tbody=document.getElementById('fin-transfers-tbody');
+  if(tbody){
+    tbody.innerHTML='';
+    D.financial.transfers.forEach(t=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td>'+t.date+'</td><td style="text-align:right;">'+fmtGHS(t.amount)+'</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Platform bars
+  function setPlatBars(el,vals){
+    if(!el)return;
+    const fills=el.querySelectorAll('.plat-fill');
+    const values=Object.values(vals).filter(v=>v!==null&&v!==undefined);
+    const max=Math.max(...values,1);
+    fills.forEach((fill,i)=>{fill.style.width=((values[i]||0)/max*100).toFixed(1)+'%';});
+  }
+  const pls=document.querySelectorAll('.plat-list');
+  if(pls[0])setPlatBars(pls[0],D.overview.platform);
+  if(pls[1])setPlatBars(pls[1],D.property_rate.platform);
+  if(pls[2])setPlatBars(pls[2],D.bop.platform);
+  if(pls[3])setPlatBars(pls[3],D.signage.platform);
+  if(pls[4])setPlatBars(pls[4],D.inspector.platform);
+
+  window.AMA={D,H};
+})();
+</script>
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ── PDF Generation using html2canvas + jsPDF ──
+// This bypasses the browser print engine entirely.
+// Each page is rendered to a canvas at high resolution,
+// then inserted into a jsPDF document at exact dimensions.
+
+const PAGE_W_MM = 338.7;
+const PAGE_H_MM = 190.5;
+const SCALE     = 3; // 3x = ~288 DPI
+
+async function generatePDF() {
+  const btn = document.getElementById('pdf-download-btn') || document.querySelector('.generate-fab');
+  const originalBtnText = btn ? btn.textContent : '';
+
+  try {
+    if (btn) {
+      btn.textContent = '⏳ Preparing...';
+      btn.disabled = true;
+    }
+
+    // ── Boost Chart.js resolution ──
+    const originalDPR = window.devicePixelRatio || 1;
+    Object.defineProperty(window, 'devicePixelRatio', {
+      get: () => SCALE,
+      configurable: true
+    });
+    if (window.Chart && window.Chart.instances) {
+      Object.values(window.Chart.instances).forEach(c => { try { c.resize(); } catch(e){} });
+    }
+    await new Promise(r => setTimeout(r, 400));
+
+    // ── Initialise jsPDF ──
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: [PAGE_W_MM, PAGE_H_MM],
+      compress: true
+    });
+
+    const pages = document.querySelectorAll('.page');
+    const total = pages.length;
+
+    for (let i = 0; i < total; i++) {
+      const page = pages[i];
+
+      if (btn) btn.textContent = `⏳ Rendering page ${i + 1} of ${total}...`;
+
+      // Render page to canvas
+      const canvas = await html2canvas(page, {
+        scale:           SCALE,
+        useCORS:         true,
+        allowTaint:      true,
+        backgroundColor: null,
+        logging:         false,
+        width:           page.offsetWidth,
+        height:          page.offsetHeight,
+        windowWidth:     page.offsetWidth,
+        windowHeight:    page.offsetHeight,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.97);
+
+      // Add page (not the first — jsPDF creates one automatically)
+      if (i > 0) pdf.addPage([PAGE_W_MM, PAGE_H_MM], 'landscape');
+
+      // Fill page exactly
+      pdf.addImage(imgData, 'JPEG', 0, 0, PAGE_W_MM, PAGE_H_MM, '', 'FAST');
+    }
+
+    // ── Restore Chart.js resolution ──
+    Object.defineProperty(window, 'devicePixelRatio', {
+      get: () => originalDPR,
+      configurable: true
+    });
+    if (window.Chart && window.Chart.instances) {
+      Object.values(window.Chart.instances).forEach(c => { try { c.resize(); } catch(e){} });
+    }
+
+    // ── Save PDF ──
+    const D = window.AMA && window.AMA.D ? window.AMA.D : null;
+    const filename = D
+      ? `AMA-Report-${D.meta.month}-${D.meta.year}.pdf`
+      : 'AMA-Report.pdf';
+
+    pdf.save(filename);
+
+    if (btn) {
+      btn.textContent = '✓ Downloaded!';
+      setTimeout(() => {
+        btn.textContent = originalBtnText;
+        btn.disabled = false;
+      }, 2000);
+    }
+
+  } catch(err) {
+    console.error('PDF generation failed:', err);
+    if (btn) {
+      btn.textContent = '✗ Failed — try again';
+      btn.disabled = false;
+      setTimeout(() => { btn.textContent = originalBtnText; }, 3000);
+    }
+    alert('PDF generation failed. Please try again.\n\nError: ' + err.message);
+  }
+}
+
+// ── Wire up the button ──
+window.addEventListener('load', () => {
+  const fab = document.querySelector('.generate-fab');
+  if (!fab) {
+    const btn = document.createElement('button');
+    btn.id = 'pdf-download-btn';
+    btn.textContent = '⬇ Download PDF';
+    btn.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1e4d35;color:white;border:none;border-radius:50px;padding:13px 26px;font-family:"DM Sans",sans-serif;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(30,77,53,0.4);z-index:9999;transition:all 0.2s;';
+    btn.onclick = generatePDF;
+    document.body.appendChild(btn);
+  } else {
+    fab.textContent = '⬇ Download PDF';
+    fab.onclick = generatePDF;
+  }
+});
+</script>
+</body>
+</html>
