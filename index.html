@@ -293,16 +293,23 @@ function exportData(){
   URL.revokeObjectURL(url);
 }
 
-function importData(file,onSuccess){
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const bundle=JSON.parse(e.target.result);
-      if(bundle.current)    saveCurrentData(migrateData(bundle.current));
-      if(bundle.historical) saveHistoricalData(bundle.historical);
-      onSuccess();
-    }catch(err){alert('Invalid file. Please import a valid AMA report JSON file.');}
+function importData(file, onSuccess){
+  if (!file) { alert('No file selected.'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const text = e.target.result;
+      if (!text || text.trim() === '') { alert('The file appears to be empty.'); return; }
+      const bundle = JSON.parse(text);
+      if (!bundle.current && !bundle.historical) { alert('Invalid file. Please import a file exported from this system.'); return; }
+      if (bundle.current) saveCurrentData(migrateData(bundle.current));
+      if (bundle.historical) saveHistoricalData(bundle.historical);
+      setTimeout(function() { onSuccess(); }, 50);
+    } catch(err) {
+      alert('Import failed: ' + err.message);
+    }
   };
+  reader.onerror = function() { alert('Could not read the file. Please try again.'); };
   reader.readAsText(file);
 }
 
@@ -1731,11 +1738,10 @@ function buildMonthFields(containerId, dataObj, monthKey, isNew) {
     inp.dataset.month = m;
 
     if (isCurrentMonth) {
-      // New month — blank, highlighted border
-      inp.value = '';
+      inp.value = savedVal !== '' && savedVal !== null && savedVal !== undefined ? savedVal : '';
       inp.style.borderColor = 'var(--g400)';
       inp.style.background = 'var(--g010)';
-      inp.placeholder = 'Enter value';
+      inp.placeholder = savedVal !== '' ? '' : 'Enter value';
     } else {
       // Previous month — pre-filled, slightly muted
       inp.value = savedVal !== '' ? savedVal : '';
@@ -1945,9 +1951,9 @@ function populateStaticFields(d, h) {
   // ── CALLOUT FIELDS ──
   function setCalloutFields(prefix, c) {
     if (!c) return;
-    setVal(prefix+'-val',  c.value||'');
-    setVal(prefix+'-sub',  c.subtitle||'');
-    setVal(prefix+'-body', c.commentary||'');
+    setVal(prefix+'val',  c.value||'');
+    setVal(prefix+'sub',  c.subtitle||'');
+    setVal(prefix+'body', c.commentary||'');
   }
   function setCalloutArr(prefix, arr, count) {
     if (!Array.isArray(arr)) return;
@@ -2296,20 +2302,33 @@ async function generateReport() {
 // ================================================================
 // IMPORT
 // ================================================================
-document.getElementById('import-input').addEventListener('change', e => {
+document.getElementById('import-input').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
-  importData(file, () => {
-    currentData = loadCurrentData();
-    currentMonth = currentData.meta.month;
-    const h = loadHistoricalData();
-    populateStaticFields(currentData, h);
-    rebuildAllMonthFields(currentData);
-    document.getElementById('current-month-chip').textContent =
-      `${currentData.meta.month} ${currentData.meta.year}`;
-    showToast('✓ Data imported successfully');
-    e.target.value = '';
-  });
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const bundle = JSON.parse(evt.target.result);
+      if (!bundle.current && !bundle.historical) {
+        alert('Invalid file format.');
+        return;
+      }
+      if (bundle.current) saveCurrentData(migrateData(bundle.current));
+      if (bundle.historical) saveHistoricalData(bundle.historical);
+      currentData = loadCurrentData();
+      currentMonth = currentData.meta.month;
+      const h = loadHistoricalData();
+      populateStaticFields(currentData, h);
+      rebuildAllMonthFields(currentData);
+      const chip = document.getElementById('current-month-chip');
+      if (chip) chip.textContent = currentData.meta.month + ' ' + currentData.meta.year;
+      showToast('✓ Data imported successfully');
+      e.target.value = '';
+    } catch(err) {
+      alert('Import failed: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
 });
 
 // ================================================================
