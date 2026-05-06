@@ -8,7 +8,7 @@
 <script>
 // ================================================================
 // AMA REPORT SYSTEM — data.js v3
-// Full 12-month schema + callout editor fields
+// Full 12-month schema + callout editor fields 
 // ================================================================
 
 const AMA_DATA_KEY = 'ama_report_current';
@@ -1254,7 +1254,7 @@ body {
             </div>
           </div>
         </div>
-        <div class="commentary">Collections increased in March, driven mainly by large property rate payments received toward the end of the month.</div>
+        <div class="commentary" id="ov-commentary">Collections increased in March, driven mainly by large property rate payments received toward the end of the month.</div>
         <div class="chart-box">
           <canvas id="c-overview-trend"></canvas>
         </div>
@@ -1839,15 +1839,15 @@ body {
         <div class="panel-title">Platform Usage</div>
         <div class="plat-list">
           <div class="plat-item">
-            <div class="plat-hd"><span class="plat-lbl">Customer Portal</span><span class="plat-val">23</span></div>
+            <div class="plat-hd"><span class="plat-lbl">Customer Portal</span><span class="plat-val" id="cs-plat-cp">23</span></div>
             <div class="plat-track"><div class="plat-fill pf-gold" style="width:100%"></div></div>
           </div>
           <div class="plat-item">
-            <div class="plat-hd"><span class="plat-lbl">Collectors Portal</span><span class="plat-val">16</span></div>
+            <div class="plat-hd"><span class="plat-lbl">Collectors Portal</span><span class="plat-val" id="cs-plat-col">16</span></div>
             <div class="plat-track"><div class="plat-fill pf-g" style="width:70%"></div></div>
           </div>
           <div class="plat-item">
-            <div class="plat-hd"><span class="plat-lbl">Customer USSD</span><span class="plat-val">12</span></div>
+            <div class="plat-hd"><span class="plat-lbl">Customer USSD</span><span class="plat-val" id="cs-plat-cu">12</span></div>
             <div class="plat-track"><div class="plat-fill pf-blue" style="width:52%"></div></div>
           </div>
         </div>
@@ -2094,10 +2094,6 @@ body {
             <tr class="total" style="font-size:20px;">
               <td><strong>Total Transfers</strong></td>
               <td style="text-align:right;color:var(--gold-light);font-size:20px;"><strong id="fin-total-tx">GHS 5,792,751.70</strong></td>
-            </tr>
-            <tr style="font-size:20px;">
-              <td style="background:var(--g050);color:var(--g700);font-weight:700;padding:7px 12px;border-top:2px solid var(--g400);font-size:20px;"><strong>Balance</strong></td>
-              <td style="background:var(--g050);color:var(--g700);font-weight:700;padding:7px 12px;border-top:2px solid var(--g400);text-align:right;font-size:20px;"><strong id="fin-balance">GHS 533,926</strong></td>
             </tr>
           </tfoot>
         </table>
@@ -2635,6 +2631,7 @@ new Chart(document.getElementById('c-overall-historical'),{
   set('ov-plat-cu',fmtN(D.overview.platform.customer_ussd));
   set('ov-plat-iu',fmtN(D.overview.platform.inspector_ussd));
   applyMoM('ov-mom','ov-mom-label',D.overview.mom_direction,D.overview.mom_change);
+  set('ov-commentary',D.overview.commentary);
 
   // P3 callouts
   if(CL.overall_yoy){setCallout('p3-c0',CL.overall_yoy[0]);setCallout('p3-c1',CL.overall_yoy[1]);}

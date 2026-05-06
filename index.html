@@ -1013,6 +1013,13 @@ select {
     </div>
 
     <div class="section-card">
+      <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">Commentary</div></div>
+      <div class="section-card-body">
+        <div class="field"><textarea id="ov-commentary" placeholder="Describe what drove overall collections this month..."></textarea></div>
+      </div>
+    </div>
+
+    <div class="section-card">
       <div class="section-card-hd"><div class="section-card-hd-icon"></div><div class="section-card-title">YoY Comparison</div></div>
       <div class="section-card-body">
         <div class="sub-hd">2024 Collections (GHS)</div>
@@ -1848,6 +1855,7 @@ function populateStaticFields(d, h) {
   setVal('ov-plat-cp', d.overview.platform.customer_portal);
   setVal('ov-plat-cu', d.overview.platform.customer_ussd);
   setVal('ov-plat-iu', d.overview.platform.inspector_ussd);
+  setVal('ov-commentary', d.overview.commentary);
   setVal('ov-yoy-change', d.overall.yoy_change_march);
   setVal('ov-ytd-pct',    d.overall.ytd_pct_of_2025);
   setVal('ov-eoy',        d.overall.eoy_projection);
@@ -2045,6 +2053,7 @@ function readForm() {
     inspector_portal: getNum('ov-plat-ip'), customer_portal: getNum('ov-plat-cp'),
     customer_ussd: getNum('ov-plat-cu'), inspector_ussd: getNum('ov-plat-iu')
   };
+  d.overview.commentary = getVal('ov-commentary');
   d.overall.yoy_change_march  = getNum('ov-yoy-change');
   d.overall.ytd_pct_of_2025   = getNum('ov-ytd-pct');
   d.overall.eoy_projection     = getNum('ov-eoy');
