@@ -1176,7 +1176,7 @@ body {
     </div>
     <div style="width:40px;height:1px;background:rgba(255,255,255,0.1);"></div>
     <div style="text-align:center;">
-      <div style="font-size:24px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Transactions</div>
+      <div style="font-size:24px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Transactions Count</div>
       <div style="font-size:34px;font-weight:700;color:white;letter-spacing:-0.5px;" id="cv-tx">4,080</div>
     </div>
   </div>
@@ -2745,7 +2745,7 @@ new Chart(document.getElementById('c-overall-historical'),{
   set('fin-balance',  fmtGHS(D.financial.balance));
   set('fin-sweep-date',D.financial.latest_sweep_date);
   set('fin-sweep-val', fmtGHS(D.financial.latest_sweep_amount));
-  set('fin-sweep-sub','Single transfer processed \u00b7 Remaining balance: '+fmtGHS(D.financial.balance));
+  set('fin-sweep-sub','Remaining balance: '+fmtGHS(D.financial.balance));
 
   const tbody=document.getElementById('fin-transfers-tbody');
   if(tbody){
